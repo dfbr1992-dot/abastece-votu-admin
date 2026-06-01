@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Ajuste básico para garantir que o container ocupe a tela toda */
+@theme {
+  /* Caso precise estender cores futuramente, será aqui */
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #0B0F19; /* Garante o fundo escuro premium padrão do app */
+}
