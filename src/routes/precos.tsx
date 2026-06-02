@@ -5,7 +5,7 @@ import { supabase } from "../integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { ChevronRight, Fuel, Loader2 } from "lucide-react";
 
@@ -60,26 +60,32 @@ function PostoRow({ posto }: { posto: Posto }) {
   const precoMap = Object.fromEntries(posto.precos.map((p) => [p.combustivel, p.valor]));
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <button className="glass-card flex w-full items-center gap-3 rounded-2xl p-4 text-left transition-shadow hover:shadow-lg hover:shadow-black/30">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 text-primary">
-            <Fuel className="w-5 h-5" />
+    <>
+      {/* Botão solto, sem o SheetTrigger ao redor */}
+      <button 
+        onClick={() => setOpen(true)}
+        className="glass-card bg-white/5 border border-white/10 flex w-full items-center gap-3 rounded-2xl p-4 text-left transition-shadow hover:bg-white/10"
+      >
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400">
+          <Fuel className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="truncate font-semibold text-white">{posto.nome}</div>
+          <div className="text-xs text-muted-foreground flex gap-3 flex-wrap mt-1">
+            {(["etanol", "gasolina_comum", "diesel"] as const).map((k) =>
+              precoMap[k] ? <span key={k}>{LABELS[k].split(" ")[0]} <b className="text-emerald-400">R$ {Number(precoMap[k]).toFixed(2)}</b></span> : null
+            )}
+            {posto.precos.length === 0 && <span>Sem preços cadastrados</span>}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="truncate font-semibold text-white">{posto.nome}</div>
-            <div className="text-xs text-muted-foreground flex gap-3 flex-wrap mt-1">
-              {(["etanol", "gasolina_comum", "diesel"] as const).map((k) =>
-                precoMap[k] ? <span key={k}>{LABELS[k].split(" ")[0]} <b className="text-price">R$ {Number(precoMap[k]).toFixed(2)}</b></span> : null
-              )}
-              {posto.precos.length === 0 && <span>Sem preços cadastrados</span>}
-            </div>
-          </div>
-          <ChevronRight className="w-5 h-5 text-muted-foreground" />
-        </button>
-      </SheetTrigger>
-      <PrecosSheet postoId={posto.id} postoNome={posto.nome} initial={precoMap} onSaved={() => setOpen(false)} />
-    </Sheet>
+        </div>
+        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+      </button>
+
+      {/* O Sheet escuta apenas a variável open */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <PrecosSheet postoId={posto.id} postoNome={posto.nome} initial={precoMap} onSaved={() => setOpen(false)} />
+      </Sheet>
+    </>
   );
 }
 
@@ -117,29 +123,33 @@ function PrecosSheet({ postoId, postoNome, initial, onSaved }: { postoId: string
   }
 
   return (
-    <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
-      <SheetHeader><SheetTitle>{postoNome}</SheetTitle></SheetHeader>
-      <div className="space-y-4 py-4">
+    /* Cor de fundo e borda forçadas no SheetContent para o tema escuro */
+    <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto bg-[#0B0F19] text-white border-t border-white/10 rounded-t-2xl">
+      <SheetHeader>
+        <SheetTitle className="text-white text-xl">{postoNome}</SheetTitle>
+      </SheetHeader>
+      
+      <div className="space-y-5 py-6">
         {(Object.keys(LABELS) as Combustivel[]).map((k) => (
           <div key={k} className="space-y-2">
-            <Label>{LABELS[k]}</Label>
+            <Label className="text-gray-300">{LABELS[k]}</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">R$</span>
               <Input
                 type="number"
                 inputMode="decimal"
                 step="0.001"
                 min="0"
                 placeholder="0.000"
-                className="pl-10 h-12 text-lg"
+                className="pl-10 h-12 text-lg bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-blue-500"
                 value={values[k]}
                 onChange={(e) => setValues({ ...values, [k]: e.target.value })}
               />
             </div>
           </div>
         ))}
-        <Button onClick={save} disabled={saving} className="w-full h-12 text-base">
-          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+        <Button onClick={save} disabled={saving} className="w-full h-12 text-base bg-blue-600 hover:bg-blue-700 text-white mt-4">
+          {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
           Salvar preços
         </Button>
       </div>

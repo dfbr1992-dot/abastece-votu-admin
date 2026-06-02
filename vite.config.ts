@@ -10,10 +10,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['icon.152.png', 'icon.192.png'],
       manifest: {
         name: 'Painel Admin — Abastece Votu',
-        short_name: 'Votu Admin',
+        short_name: 'Abastece Admin',
         description: 'Gerenciador do ecossistema Abastece Votu',
         theme_color: '#0B0F19',
         background_color: '#0B0F19',
