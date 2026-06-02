@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, MapPin, DollarSign, Wrench, Gift, Image as ImageIcon, LogOut } from "lucide-react";
+import { LayoutDashboard, TrendingUp, MapPin, DollarSign, Wrench, Gift, Image as ImageIcon, LogOut } from "lucide-react";
 
 export function Sidebar() {
   return (
@@ -13,6 +13,7 @@ export function Sidebar() {
         <nav className="space-y-1">
           {[
             { label: "Dashboard", to: "/", icon: LayoutDashboard },
+            { label: "Insights", to: "/insights", icon: TrendingUp }, // Novo botão adicionado
             { label: "Postos", to: "/postos", icon: MapPin },
             { label: "Preços", to: "/precos", icon: DollarSign },
             { label: "Serviços", to: "/servicos", icon: Wrench },
