@@ -10,7 +10,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.152.png', 'icon.192.png'],
+      includeAssets: ['icon-152.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Painel Admin — Abastece Votu',
         short_name: 'Abastece Admin',
@@ -21,12 +21,12 @@ export default defineConfig({
         orientation: 'portrait',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'icon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

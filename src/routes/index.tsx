@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, DollarSign, Wrench, Image as ImageIcon, Users, UserCheck, User } from "lucide-react";
+import { MapPin, DollarSign, Wrench, Image as ImageIcon, UserCheck, User } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: AdminDashboard,
 });
 
 // Atualizado para buscar contagens de tabelas ou condições específicas
-function useCount(table: "postos" | "servicos" | "banners" | "precos", filter?: { column: string, value: any }) {
+function useCount(table: "postos" | "servicos" | "banners" | "precos" | "profiles", filter?: { column: string, value: any }) {
   return useQuery({
     queryKey: ["count", table, filter],
     queryFn: async () => {
@@ -29,15 +29,14 @@ function AdminDashboard() {
   const banners = useCount("banners");
   
   // Queries específicas para usuários baseadas na sua tabela 'profiles'
-  // Supondo que você tenha uma coluna 'is_premium' ou 'subscription_type'
   const freeUsers = useCount("profiles", { column: "is_premium", value: false });
   const paidUsers = useCount("profiles", { column: "is_premium", value: true });
 
   const cards = [
-    { to: "/admin/postos", label: "Postos", icon: MapPin, count: postos.data, color: "bg-emerald-500" },
-    { to: "/admin/precos", label: "Preços", icon: DollarSign, count: precos.data, color: "bg-blue-500" },
-    { to: "/admin/servicos", label: "Serviços", icon: Wrench, count: servicos.data, color: "bg-amber-500" },
-    { to: "/admin/banners", label: "Banners", icon: ImageIcon, count: banners.data, color: "bg-purple-500" },
+    { to: "/postos", label: "Postos", icon: MapPin, count: postos.data, color: "bg-emerald-500" },
+    { to: "/precos", label: "Preços", icon: DollarSign, count: precos.data, color: "bg-blue-500" },
+    { to: "/servicos", label: "Serviços", icon: Wrench, count: servicos.data, color: "bg-amber-500" },
+    { to: "/banners", label: "Banners", icon: ImageIcon, count: banners.data, color: "bg-purple-500" },
   ] as const;
 
   const userCards = [

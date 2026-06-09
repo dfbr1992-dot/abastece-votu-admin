@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,120 +14,96 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus, Edit, Trash2, Loader2, Gift } from "lucide-react";
+import { toast } from "sonner";
+import { z } from "zod";
 
 export const Route = createFileRoute("/premios")({
   component: AdminPremios,
 });
 
-interface Reward {
-  id?: string;
-  nome: string;
-  descricao: string;
-  custo_pontos: number;
-  ativo: boolean;
-  emoji: string;
-}
+const rewardSchema = z.object({
+  nome: z.string().trim().min(1, "O nome é obrigatório"),
+  descricao: z.string().trim().optional(),
+  custo_pontos: z.coerce.number().min(0, "O custo deve ser positivo"),
+  ativo: z.boolean(),
+  emoji: z.string().trim().min(1, "O emoji é obrigatório"),
+});
+
+type RewardFormData = z.infer<typeof rewardSchema>;
+type Reward = RewardFormData & { id: string };
 
 function AdminPremios() {
-  const [premios, setPremios] = useState<Reward[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [editingReward, setEditingReward] = useState<Reward | null>(null);
 
-  // Estado para o formulário (Novo/Edição)
-  const [formData, setFormData] = useState<Reward>({
-    nome: "",
-    descricao: "",
-    custo_pontos: 0,
-    ativo: true,
-    emoji: "🎁",
+  // 1. Busca de Dados com React Query
+  const { data: premios, isLoading } = useQuery({
+    queryKey: ["premios"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rewards")
+        .select("*")
+        .order("custo_pontos", { ascending: true });
+
+      if (error) throw error;
+      return data as Reward[];
+    },
   });
 
-  useEffect(() => {
-    fetchPremios();
-  }, []);
+  // 2. Mutação para Salvar/Editar
+  const saveMutation = useMutation({
+    mutationFn: async (formData: RewardFormData) => {
+      if (editingReward) {
+        const { error } = await supabase
+          .from("rewards")
+          .update(formData)
+          .eq("id", editingReward.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("rewards").insert([formData]);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success(editingReward ? "Prêmio atualizado!" : "Prêmio cadastrado!");
+      queryClient.invalidateQueries({ queryKey: ["premios"] });
+      setIsModalOpen(false);
+      setEditingReward(null);
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao salvar: " + error.message);
+    },
+  });
 
-  async function fetchPremios() {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("rewards")
-      .select("*")
-      .order("custo_pontos", { ascending: true });
+  // 3. Mutação para Deletar
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("rewards").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Prêmio removido com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["premios"] });
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao deletar: " + error.message);
+    },
+  });
 
-    if (error) {
-      console.error("Erro ao buscar prêmios:", error);
-    } else {
-      setPremios(data || []);
-    }
-    setLoading(false);
-  }
-
-  // Abre o modal para Criar Novo
   function handleNovoPremio() {
-    setFormData({
-      nome: "",
-      descricao: "",
-      custo_pontos: 0,
-      ativo: true,
-      emoji: "🎁",
-    });
+    setEditingReward(null);
     setIsModalOpen(true);
   }
 
-  // Abre o modal para Editar
   function handleEditarPremio(premio: Reward) {
-    setFormData(premio);
+    setEditingReward(premio);
     setIsModalOpen(true);
   }
 
-  // Salva ou Atualiza no Supabase
-  async function handleSalvar(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-
-    if (formData.id) {
-      // Modo Edição
-      const { error } = await supabase
-        .from("rewards")
-        .update({
-          nome: formData.nome,
-          descricao: formData.descricao,
-          custo_pontos: Number(formData.custo_pontos),
-          ativo: formData.ativo,
-          emoji: formData.emoji,
-        })
-        .eq("id", formData.id);
-
-      if (error) console.error("Erro ao atualizar:", error);
-    } else {
-      // Modo Criação
-      const { error } = await supabase.from("rewards").insert([
-        {
-          nome: formData.nome,
-          descricao: formData.descricao,
-          custo_pontos: Number(formData.custo_pontos),
-          ativo: formData.ativo,
-          emoji: formData.emoji,
-        },
-      ]);
-
-      if (error) console.error("Erro ao inserir:", error);
-    }
-
-    setSaving(false);
-    setIsModalOpen(false);
-    fetchPremios(); // Recarrega a lista atualizada
-  }
-
-  async function deletarPremio(id: string) {
-    if (!confirm("Tem certeza que deseja excluir este prêmio?")) return;
-
-    const { error } = await supabase.from("rewards").delete().eq("id", id);
-    if (error) {
-      console.error("Erro ao deletar:", error);
-      alert("Erro ao deletar prêmio.");
-    } else {
-      fetchPremios();
+  function handleDeletar(id: string) {
+    if (confirm("Tem certeza que deseja excluir este prêmio?")) {
+      deleteMutation.mutate(id);
     }
   }
 
@@ -146,13 +123,12 @@ function AdminPremios() {
         </Button>
       </div>
 
-      {/* Tabela de Prêmios */}
       <div className="glass-card rounded-xl border border-white/10 overflow-hidden">
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center p-10">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
-        ) : premios.length === 0 ? (
+        ) : !premios?.length ? (
           <div className="p-10 text-center text-muted-foreground text-sm">
             Nenhum prêmio cadastrado.
           </div>
@@ -200,7 +176,7 @@ function AdminPremios() {
                           variant="ghost" 
                           size="icon" 
                           className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                          onClick={() => deletarPremio(premio.id!)}
+                          onClick={() => handleDeletar(premio.id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -214,91 +190,126 @@ function AdminPremios() {
         )}
       </div>
 
-      {/* Modal de Criação / Edição */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-[#161618] border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              {formData.id ? "Editar Prêmio" : "Cadastrar Novo Prêmio"}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSalvar} className="space-y-4 pt-4">
-            <div className="flex gap-3">
-              <div className="w-20">
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">Emoji</label>
-                <Input
-                  value={formData.emoji}
-                  onChange={(e) => setFormData({ ...formData, emoji: e.target.value })}
-                  placeholder="🎁"
-                  className="bg-white/5 border-white/10 text-center text-lg focus-visible:ring-primary"
-                  required
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">Nome do Prêmio</label>
-                <Input
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  placeholder="Ex: Pão de Queijo"
-                  className="bg-white/5 border-white/10 focus-visible:ring-primary"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground block mb-1">Custo em Pontos</label>
-              <Input
-                type="number"
-                value={formData.custo_pontos}
-                onChange={(e) => setFormData({ ...formData, custo_pontos: Number(e.target.value) })}
-                placeholder="Ex: 150"
-                className="bg-white/5 border-white/10 focus-visible:ring-primary"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground block mb-1">Descrição</label>
-              <Textarea
-                value={formData.descricao}
-                onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                placeholder="Detalhes sobre a cortesia..."
-                className="bg-white/5 border-white/10 resize-none h-20 focus-visible:ring-primary"
-              />
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border border-white/10 p-3 bg-white/5">
-              <div className="space-y-0.5">
-                <label className="text-sm font-medium">Prêmio Ativo</label>
-                <p className="text-xs text-muted-foreground">Disponibiliza o prêmio imediatamente para resgate.</p>
-              </div>
-              <Switch
-                checked={formData.ativo}
-                onCheckedChange={(checked) => setFormData({ ...formData, ativo: checked })}
-              />
-            </div>
-
-            <DialogFooter className="pt-4">
-              <Button 
-                type="button" 
-                variant="ghost" 
-                onClick={() => setIsModalOpen(false)}
-                className="text-white hover:bg-white/5"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={saving}
-                className="bg-primary hover:bg-primary/90 text-white font-bold min-w-[100px]"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
+        <RewardDialog 
+          initial={editingReward} 
+          onSave={(data) => saveMutation.mutate(data)} 
+          onClose={() => setIsModalOpen(false)}
+          isSaving={saveMutation.isPending}
+        />
       </Dialog>
     </div>
+  );
+}
+
+function RewardDialog({ 
+  initial, 
+  onSave, 
+  onClose,
+  isSaving 
+}: { 
+  initial: Reward | null; 
+  onSave: (d: RewardFormData) => void; 
+  onClose: () => void;
+  isSaving: boolean;
+}) {
+  const [form, setForm] = useState<RewardFormData>({
+    nome: initial?.nome ?? "",
+    descricao: initial?.descricao ?? "",
+    custo_pontos: initial?.custo_pontos ?? 0,
+    ativo: initial?.ativo ?? true,
+    emoji: initial?.emoji ?? "🎁",
+  });
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const parsed = rewardSchema.safeParse(form);
+    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
+    onSave(parsed.data);
+  }
+
+  return (
+    <DialogContent className="sm:max-w-[425px] bg-[#161618] border-white/10 text-white">
+      <DialogHeader>
+        <DialogTitle className="text-xl font-bold">
+          {initial ? "Editar Prêmio" : "Cadastrar Novo Prêmio"}
+        </DialogTitle>
+      </DialogHeader>
+      <form onSubmit={submit} className="space-y-4 pt-4">
+        <div className="flex gap-3">
+          <div className="w-20">
+            <label className="text-xs font-semibold text-muted-foreground block mb-1">Emoji</label>
+            <Input
+              value={form.emoji}
+              onChange={(e) => setForm({ ...form, emoji: e.target.value })}
+              placeholder="🎁"
+              className="bg-white/5 border-white/10 text-center text-lg focus-visible:ring-primary"
+              required
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-xs font-semibold text-muted-foreground block mb-1">Nome do Prêmio</label>
+            <Input
+              value={form.nome}
+              onChange={(e) => setForm({ ...form, nome: e.target.value })}
+              placeholder="Ex: Pão de Queijo"
+              className="bg-white/5 border-white/10 focus-visible:ring-primary"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground block mb-1">Custo em Pontos</label>
+          <Input
+            type="number"
+            value={form.custo_pontos}
+            onChange={(e) => setForm({ ...form, custo_pontos: Number(e.target.value) })}
+            placeholder="Ex: 150"
+            className="bg-white/5 border-white/10 focus-visible:ring-primary"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground block mb-1">Descrição</label>
+          <Textarea
+            value={form.descricao}
+            onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+            placeholder="Detalhes sobre a cortesia..."
+            className="bg-white/5 border-white/10 resize-none h-20 focus-visible:ring-primary"
+          />
+        </div>
+
+        <div className="flex items-center justify-between rounded-lg border border-white/10 p-3 bg-white/5">
+          <div className="space-y-0.5">
+            <label className="text-sm font-medium">Prêmio Ativo</label>
+            <p className="text-xs text-muted-foreground">Disponibiliza o prêmio imediatamente para resgate.</p>
+          </div>
+          <Switch
+            checked={form.ativo}
+            onCheckedChange={(checked) => setForm({ ...form, ativo: checked })}
+          />
+        </div>
+
+        <DialogFooter className="pt-4">
+          <Button 
+            type="button" 
+            variant="ghost" 
+            onClick={onClose}
+            className="text-white hover:bg-white/5"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isSaving}
+            className="bg-primary hover:bg-primary/90 text-white font-bold min-w-[100px]"
+          >
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
   );
 }

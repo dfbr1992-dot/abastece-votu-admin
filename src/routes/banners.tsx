@@ -13,7 +13,6 @@ import { z } from "zod";
 
 export const Route = createFileRoute("/banners")({ component: BannersPage });
 
-// Posições estratégicas mapeadas para o aplicativo de celular
 const POSICOES = {
   topo: { label: "Topo da Tela Inicial", tamanho: "Recomendado: 1200x600px (2:1)" },
   meio: { label: "Meio (Entre Postos)", tamanho: "Recomendado: 1200x400px (3:1)" },
@@ -24,9 +23,9 @@ type PosicaoKey = keyof typeof POSICOES;
 
 const schema = z.object({
   titulo: z.string().trim().min(1, "Obrigatório").max(100),
-  imagem_url: z.string().url("Insira uma URL de imagem válida"),
-  posicao: z.enum(["topo", "meio", "popup"]),
-  link_destino: z.string().optional().nullable(),
+  image_url: z.string().url("Insira uma URL de imagem válida"),
+  prioridade: z.enum(["topo", "meio", "popup"]),
+  link_url: z.string().url("Insira uma URL de destino válida").or(z.literal("")).optional().nullable(),
   ativo: z.boolean(),
 });
 
@@ -41,7 +40,7 @@ function BannersPage() {
   const { data: banners, isLoading } = useQuery({
     queryKey: ["banners"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("banners").select("*").order("posicao");
+      const { data, error } = await supabase.from("banners").select("*").order("prioridade");
       if (error) throw error;
       return data as Banner[];
     },
@@ -57,16 +56,35 @@ function BannersPage() {
     setOpen(true);
   }
 
+  // AQUI É O LUGAR CORRETO DA FUNÇÃO SAVE!
   async function save(form: FormData) {
-    const { error } = editing
-      ? await supabase.from("banners").update(form).eq("id", editing.id)
-      : await supabase.from("banners").insert(form);
+    try {
+      const payload = {
+        titulo: form.titulo,
+        image_url: form.image_url,
+        prioridade: form.prioridade,
+        link_url: form.link_url?.trim() === "" ? null : form.link_url,
+        ativo: form.ativo,
+      };
 
-    if (error) return toast.error(error.message);
+      console.log("Enviando este payload exato para o Supabase:", payload);
 
-    toast.success(editing ? "Banner atualizado" : "Banner criado");
-    qc.invalidateQueries({ queryKey: ["banners"] });
-    setOpen(false);
+      const { error } = editing
+        ? await supabase.from("banners").update(payload).eq("id", editing.id)
+        : await supabase.from("banners").insert([payload]);
+
+      if (error) {
+        console.error("Erro detalhado do Supabase:", error);
+        return toast.error(`Erro no Banco: ${error.message}`);
+      }
+
+      toast.success(editing ? "Banner updated" : "Banner criado com sucesso!");
+      qc.invalidateQueries({ queryKey: ["banners"] });
+      setOpen(false);
+    } catch (err) {
+      console.error("Erro inesperado ao salvar:", err);
+      toast.error("Erro interno ao salvar o banner.");
+    }
   }
 
   async function remove(id: string) {
@@ -105,19 +123,19 @@ function BannersPage() {
             <div key={b.id} className="glass-card bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col justify-between">
               <div>
                 <div className="relative aspect-[2/1] w-full rounded-xl overflow-hidden bg-black/40 mb-3 border border-white/5 flex items-center justify-center group">
-                  {b.imagem_url ? (
-                    <img src={b.imagem_url} alt={b.titulo} className="object-cover w-full h-full" />
+                  {b.image_url ? (
+                    <img src={b.image_url} alt={b.titulo} className="object-cover w-full h-full" />
                   ) : (
                     <ImageIcon className="w-8 h-8 text-gray-600" />
                   )}
                   <span className="absolute top-2 left-2 bg-black/70 text-blue-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md border border-white/10">
-                    {POSICOES[b.posicao]?.label}
+                    {POSICOES[b.prioridade as PosicaoKey]?.label || b.prioridade}
                   </span>
                 </div>
                 
                 <h3 className="text-white font-semibold text-base truncate">{b.titulo}</h3>
-                {b.link_destino && (
-                  <a href={b.link_destino} target="_blank" rel="noreferrer" className="text-xs text-blue-400 flex items-center gap-1 mt-1 hover:underline">
+                {b.link_url && (
+                  <a href={b.link_url} target="_blank" rel="noreferrer" className="text-xs text-blue-400 flex items-center gap-1 mt-1 hover:underline">
                     Link de destino <ExternalLink className="w-3 h-3" />
                   </a>
                 )}
@@ -148,16 +166,18 @@ function BannersPage() {
 function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; onSave: (d: FormData) => void; onCancel: () => void }) {
   const [form, setForm] = useState<FormData>({
     titulo: initial?.titulo ?? "",
-    imagem_url: initial?.imagem_url ?? "",
-    posicao: initial?.posicao ?? "topo",
-    link_destino: initial?.link_destino ?? "",
+    image_url: initial?.image_url ?? "",
+    prioridade: (initial?.prioridade as PosicaoKey) ?? "topo",
+    link_url: initial?.link_url ?? "",
     ativo: initial?.ativo ?? true,
   });
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
+  // O handleManualSubmit correto apenas valida e repassa para a função save!
+  function handleManualSubmit() {
     const parsed = schema.safeParse(form);
-    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
+    if (!parsed.success) {
+      return toast.error(parsed.error.issues[0].message);
+    }
     onSave(parsed.data);
   }
 
@@ -167,7 +187,7 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
         <DialogTitle className="text-xl">{initial ? "Editar Banner" : "Novo Banner"}</DialogTitle>
       </DialogHeader>
 
-      <form onSubmit={submit} className="space-y-4 pt-4">
+      <div className="space-y-4 pt-4">
         <div className="space-y-2">
           <Label className="text-gray-300">Título Interno do Banner</Label>
           <Input
@@ -175,7 +195,6 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
             value={form.titulo}
             onChange={(e) => setForm({ ...form, titulo: e.target.value })}
             placeholder="Ex: Campanha Gasolina Aditivada - Junho"
-            required
           />
         </div>
 
@@ -183,8 +202,8 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
           <Label className="text-gray-300">Posição no Aplicativo Móvel</Label>
           <select
             className="w-full h-10 rounded-md bg-white/5 border border-white/10 text-white px-3 text-sm focus-visible:ring-blue-500"
-            value={form.posicao}
-            onChange={(e) => setForm({ ...form, posicao: e.target.value as PosicaoKey })}
+            value={form.prioridade}
+            onChange={(e) => setForm({ ...form, prioridade: e.target.value as PosicaoKey })}
           >
             {(Object.keys(POSICOES) as PosicaoKey[]).map((key) => (
               <option key={key} value={key} className="bg-[#0B0F19] text-white">
@@ -192,17 +211,16 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
               </option>
             ))}
           </select>
-          <p className="text-[11px] text-blue-400 font-medium">{POSICOES[form.posicao]?.tamanho}</p>
+          <p className="text-[11px] text-blue-400 font-medium">{POSICOES[form.prioridade]?.tamanho}</p>
         </div>
 
         <div className="space-y-2">
           <Label className="text-gray-300">URL da Imagem do Banner</Label>
           <Input
             className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500"
-            value={form.imagem_url}
-            onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
+            value={form.image_url}
+            onChange={(e) => setForm({ ...form, image_url: e.target.value })}
             placeholder="https://linkdaimagem.com/foto.png"
-            required
           />
         </div>
 
@@ -210,8 +228,8 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
           <Label className="text-gray-300">Link de Ação ao Clicar (Opcional)</Label>
           <Input
             className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500"
-            value={form.link_destino ?? ""}
-            onChange={(e) => setForm({ ...form, link_destino: e.target.value })}
+            value={form.link_url ?? ""}
+            onChange={(e) => setForm({ ...form, link_url: e.target.value })}
             placeholder="Ex: https://posto-votu.com/promocao"
           />
         </div>
@@ -220,16 +238,16 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
           <Label className="text-gray-300 cursor-pointer">Banner Ativo (Visível no App)</Label>
           <Switch checked={form.ativo} onCheckedChange={(v) => setForm({ ...form, ativo: v })} />
         </div>
+      </div>
 
-        <DialogFooter className="pt-2">
-          <Button type="button" variant="ghost" onClick={onCancel} className="text-gray-400 hover:text-white hover:bg-white/10">
-            Cancelar
-          </Button>
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-            Salvar Banner
-          </Button>
-        </DialogFooter>
-      </form>
+      <DialogFooter className="pt-4">
+        <Button type="button" variant="ghost" onClick={onCancel} className="text-gray-400 hover:text-white hover:bg-white/10">
+          Cancelar
+        </Button>
+        <Button type="button" onClick={handleManualSubmit} className="bg-blue-600 hover:bg-blue-700 text-white">
+          Salvar Banner
+        </Button>
+      </DialogFooter>
     </DialogContent>
   );
 }

@@ -21,20 +21,33 @@ function AdminInsights() {
   const { data, isLoading } = useQuery({
     queryKey: ["insights-data"],
     queryFn: async () => {
-      const { data: users } = await supabase.from("profiles").select("is_premium, created_at");
-      const { data: resgates } = await supabase.from("resgates").select("premio_id");
+      // Otimização: Busca apenas as contagens agregadas do banco
+      const { count: totalAssinantes } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_premium", true);
+
+      const { count: totalGratis } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("is_premium", false);
+
+      const { data: resgatesRaw } = await supabase
+        .from("resgates")
+        .select("premio_id");
       
       return { 
-        users: (users as ProfileData[]) || [], 
-        resgates: (resgates as Resgate[]) || [] 
+        totalAssinantes: totalAssinantes || 0,
+        totalGratis: totalGratis || 0,
+        resgates: (resgatesRaw as Resgate[]) || [] 
       };
     },
   });
 
   if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary" /></div>;
 
-  const totalAssinantes = data?.users?.filter((u: ProfileData) => u.is_premium).length || 0;
-  const totalGratis = data?.users?.filter((u: ProfileData) => !u.is_premium).length || 0;
+  const totalAssinantes = data?.totalAssinantes || 0;
+  const totalGratis = data?.totalGratis || 0;
   const pieData = [{ name: "Assinantes", value: totalAssinantes }, { name: "Grátis", value: totalGratis }];
 
   // Contagem simples de resgates por ID (para exemplificar o gráfico)

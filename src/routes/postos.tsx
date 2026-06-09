@@ -88,7 +88,7 @@ function PostosPage() {
 
       {/* Dialog renderizado condicionalmente na raiz para garantir z-index correto */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <PostoDialog key={editing?.id ?? "new"} initial={editing} onSave={save} />
+        <PostoDialog key={editing?.id ?? "new"} initial={editing} onSave={save} onClose={() => setOpen(false)} />
       </Dialog>
 
       {isLoading ? (
@@ -140,7 +140,7 @@ function PostosPage() {
   );
 }
 
-function PostoDialog({ initial, onSave }: { initial: Posto | null; onSave: (d: FormData) => void }) {
+function PostoDialog({ initial, onSave, onClose }: { initial: Posto | null; onSave: (d: FormData) => void; onClose: () => void }) {
   const [form, setForm] = useState<FormData>({
     nome: initial?.nome ?? "",
     endereco: initial?.endereco ?? "",
@@ -239,7 +239,7 @@ function PostoDialog({ initial, onSave }: { initial: Posto | null; onSave: (d: F
         </div>
         
         <DialogFooter className="pt-2">
-          <Button type="button" variant="ghost" onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))} className="text-gray-400 hover:text-white hover:bg-white/10">
+          <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white hover:bg-white/10">
             Cancelar
           </Button>
           <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
