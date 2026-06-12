@@ -2,12 +2,19 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MapPin, DollarSign, Wrench, Image as ImageIcon, UserCheck, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/")({
   component: AdminDashboard,
 });
 
-// Atualizado para buscar contagens de tabelas ou condições específicas
 function useCount(table: "postos" | "servicos" | "banners" | "precos" | "profiles", filter?: { column: string, value: any }) {
   return useQuery({
     queryKey: ["count", table, filter],
@@ -23,14 +30,22 @@ function useCount(table: "postos" | "servicos" | "banners" | "precos" | "profile
 }
 
 function AdminDashboard() {
+  const [showWelcome, setShowWelcome] = useState(false);
   const postos = useCount("postos");
   const precos = useCount("precos");
   const servicos = useCount("servicos");
   const banners = useCount("banners");
   
-  // Queries específicas para usuários baseadas na sua tabela 'profiles'
   const freeUsers = useCount("profiles", { column: "is_premium", value: false });
   const paidUsers = useCount("profiles", { column: "is_premium", value: true });
+
+  useEffect(() => {
+    const shouldShow = localStorage.getItem("showWelcomeDouglas");
+    if (shouldShow === "true") {
+      setShowWelcome(true);
+      localStorage.removeItem("showWelcomeDouglas");
+    }
+  }, []);
 
   const cards = [
     { to: "/postos", label: "Postos", icon: MapPin, count: postos.data, color: "bg-emerald-500" },
@@ -49,7 +64,6 @@ function AdminDashboard() {
       <h1 className="mb-1 text-2xl font-bold text-white md:text-3xl">Dashboard</h1>
       <p className="text-muted-foreground mb-6">Visão geral do hub de gestão.</p>
 
-      {/* Grid de Gestão Operacional */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map((c) => {
           const Icon = c.icon;
@@ -65,7 +79,6 @@ function AdminDashboard() {
         })}
       </div>
 
-      {/* Grid de Métricas de Usuários */}
       <h2 className="text-lg font-semibold text-white mb-4">Métricas de Usuários</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {userCards.map((c) => {
@@ -90,6 +103,17 @@ function AdminDashboard() {
           Gerencie postos, atualize preços, monitore assinantes e publique anúncios.
         </p>
       </div>
+
+      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
+        <DialogContent className="sm:max-w-[425px] bg-[#0B0F19] border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-blue-500">Acesso Autorizado</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-lg pt-4">
+              Bem vindo Douglas
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
