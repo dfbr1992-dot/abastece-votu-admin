@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, ShieldAlert } from "lucide-react";
-import logoAbasteceVotu from "@/assets/logo-abastece-votu.png";
+import logoAbasteceVotu from "@/assets/logo-abastece-votu.gif";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,

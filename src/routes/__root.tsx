@@ -3,6 +3,7 @@ import { Sidebar } from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { Menu, Loader2, ShieldAlert } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
+import logoAbasteceVotu from "@/assets/logo-abastece-votu.gif";
 
 function RootComponent() {
   const { isAdmin, isAuthenticated, loading, signOut } = useAuth();
@@ -19,7 +20,8 @@ function RootComponent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#080a12] text-white">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#080a12] text-white">
+        <img src={logoAbasteceVotu} alt="Logo Abastece Votu" className="mb-8 h-32 w-auto" />
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
