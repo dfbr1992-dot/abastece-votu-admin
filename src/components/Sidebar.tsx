@@ -79,7 +79,7 @@ export function Sidebar({
               Ver Site Principal
             </a>
             <a
-              href="https://abastevotu.lovable.app"
+              href="https://abastecevotuapp.dfbr1992.workers.dev/"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-[#1e2330] transition-all"
