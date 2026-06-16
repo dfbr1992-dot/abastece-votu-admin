@@ -72,7 +72,7 @@ function RootComponent() {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <h1 className="text-xl font-bold ml-4">Abastece Votu</h1>
+        <h1 className="text-xl font-bold ml-4">Abastece ADM</h1>
       </div>
 
       <Sidebar 

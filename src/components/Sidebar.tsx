@@ -35,7 +35,7 @@ export function Sidebar({
       <div>
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-white">Abastece Votu</h1>
+            <h1 className="text-xl font-bold text-white">Abastece ADM</h1>
             <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Painel de Controle</p>
           </div>
           <button onClick={onClose} className="md:hidden text-gray-400 hover:text-white">

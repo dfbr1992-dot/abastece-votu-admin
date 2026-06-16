@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon-152.png', 'icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Painel Admin — Abastece Votu',
-        short_name: 'Abastece Admin',
+        name: 'Abastece ADM — Painel',
+        short_name: 'Abastece ADM',
         description: 'Gerenciador do ecossistema Abastece Votu',
         theme_color: '#0B0F19',
         background_color: '#0B0F19',

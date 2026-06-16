@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, DollarSign, Wrench, Image as ImageIcon, UserCheck, User } from "lucide-react";
+import { MapPin, DollarSign, Wrench, Image as ImageIcon, UserCheck, User, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Dialog,
@@ -38,6 +38,8 @@ function AdminDashboard() {
   
   const freeUsers = useCount("profiles", { column: "is_premium", value: false });
   const paidUsers = useCount("profiles", { column: "is_premium", value: true });
+  // @ts-ignore - ignorando erro de tipo caso a tabela ainda não tenha sido criada no Supabase
+  const pwaInstalls = useCount("app_installations");
 
   useEffect(() => {
     const shouldShow = localStorage.getItem("showWelcomeDouglas");
@@ -57,6 +59,7 @@ function AdminDashboard() {
   const userCards = [
     { label: "Contas Grátis", count: freeUsers.data, icon: User, color: "bg-slate-600" },
     { label: "Assinantes", count: paidUsers.data, icon: UserCheck, color: "bg-yellow-500" },
+    { label: "Instalações PWA", count: pwaInstalls.data, icon: Download, color: "bg-indigo-500" },
   ];
 
   return (
@@ -79,8 +82,8 @@ function AdminDashboard() {
         })}
       </div>
 
-      <h2 className="text-lg font-semibold text-white mb-4">Métricas de Usuários</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <h2 className="text-lg font-semibold text-white mb-4">Métricas de Usuários e App</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {userCards.map((c) => {
           const Icon = c.icon;
           return (
