@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Plus, Pencil, Trash2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { PostoServicosForm } from "@/components/PostoServicosForm";
 
 export const Route = createFileRoute("/postos")({ component: PostosPage });
 
@@ -25,6 +26,12 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 type Posto = FormData & { id: string };
+
+type PostoDialogProps = {
+  initial: Posto | null;
+  onSave: (d: FormData) => void;
+  onClose: () => void;
+};
 
 function PostosPage() {
   const qc = useQueryClient();
@@ -140,7 +147,7 @@ function PostosPage() {
   );
 }
 
-function PostoDialog({ initial, onSave, onClose }: { initial: Posto | null; onSave: (d: FormData) => void; onClose: () => void }) {
+function PostoDialog({ initial, onSave, onClose }: PostoDialogProps) {
   const [form, setForm] = useState<FormData>({
     nome: initial?.nome ?? "",
     endereco: initial?.endereco ?? "",
@@ -237,6 +244,12 @@ function PostoDialog({ initial, onSave, onClose }: { initial: Posto | null; onSa
             onCheckedChange={(v) => setForm({ ...form, ativo: v })} 
           />
         </div>
+        
+        {initial && (
+          <div className="pt-2">
+            <PostoServicosForm postoId={initial.id} />
+          </div>
+        )}
         
         <DialogFooter className="pt-2">
           <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white hover:bg-white/10">

@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { 
   LayoutDashboard, 
-  TrendingUp, 
+  TrendingUp,
+  BarChart3, 
   MapPin, 
   DollarSign, 
   Wrench, 
@@ -47,6 +48,7 @@ export function Sidebar({
           {[
             { label: "Dashboard", to: "/", icon: LayoutDashboard },
             { label: "Insights", to: "/insights", icon: TrendingUp },
+            { label: "Métricas", to: "/metricas", icon: BarChart3 },
             { label: "Postos", to: "/postos", icon: MapPin },
             { label: "Preços", to: "/precos", icon: DollarSign },
             { label: "Serviços", to: "/servicos", icon: Wrench },

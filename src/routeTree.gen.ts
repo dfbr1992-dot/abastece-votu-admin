@@ -14,6 +14,7 @@ import { Route as PremiosRouteImport } from './routes/premios'
 import { Route as PrecosRouteImport } from './routes/precos'
 import { Route as PostosRouteImport } from './routes/postos'
 import { Route as NotificacoesRouteImport } from './routes/notificacoes'
+import { Route as MetricasRouteImport } from './routes/metricas'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as ClientesRouteImport } from './routes/clientes'
@@ -43,6 +44,11 @@ const PostosRoute = PostosRouteImport.update({
 const NotificacoesRoute = NotificacoesRouteImport.update({
   id: '/notificacoes',
   path: '/notificacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MetricasRoute = MetricasRouteImport.update({
+  id: '/metricas',
+  path: '/metricas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/clientes': typeof ClientesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/metricas': typeof MetricasRoute
   '/notificacoes': typeof NotificacoesRoute
   '/postos': typeof PostosRoute
   '/precos': typeof PrecosRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/clientes': typeof ClientesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/metricas': typeof MetricasRoute
   '/notificacoes': typeof NotificacoesRoute
   '/postos': typeof PostosRoute
   '/precos': typeof PrecosRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/clientes': typeof ClientesRoute
   '/insights': typeof InsightsRoute
   '/login': typeof LoginRoute
+  '/metricas': typeof MetricasRoute
   '/notificacoes': typeof NotificacoesRoute
   '/postos': typeof PostosRoute
   '/precos': typeof PrecosRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/clientes'
     | '/insights'
     | '/login'
+    | '/metricas'
     | '/notificacoes'
     | '/postos'
     | '/precos'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/clientes'
     | '/insights'
     | '/login'
+    | '/metricas'
     | '/notificacoes'
     | '/postos'
     | '/precos'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/clientes'
     | '/insights'
     | '/login'
+    | '/metricas'
     | '/notificacoes'
     | '/postos'
     | '/precos'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   ClientesRoute: typeof ClientesRoute
   InsightsRoute: typeof InsightsRoute
   LoginRoute: typeof LoginRoute
+  MetricasRoute: typeof MetricasRoute
   NotificacoesRoute: typeof NotificacoesRoute
   PostosRoute: typeof PostosRoute
   PrecosRoute: typeof PrecosRoute
@@ -195,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/notificacoes'
       fullPath: '/notificacoes'
       preLoaderRoute: typeof NotificacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/metricas': {
+      id: '/metricas'
+      path: '/metricas'
+      fullPath: '/metricas'
+      preLoaderRoute: typeof MetricasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClientesRoute: ClientesRoute,
   InsightsRoute: InsightsRoute,
   LoginRoute: LoginRoute,
+  MetricasRoute: MetricasRoute,
   NotificacoesRoute: NotificacoesRoute,
   PostosRoute: PostosRoute,
   PrecosRoute: PrecosRoute,

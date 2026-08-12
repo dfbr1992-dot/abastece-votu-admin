@@ -9,14 +9,21 @@ import "./index.css";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutos de cache padrão
+      staleTime: 1000 * 60 * 5, // 5 minutos de cache padrão (os dados são considerados novos por 5 min)
+      gcTime: 1000 * 60 * 60 * 24, // 24 horas de Garbage Collection (mantém no cache mesmo inativo)
       retry: 1,
+      refetchOnWindowFocus: false, // Evita refetch desnecessário ao trocar de aba no admin
+      refetchOnReconnect: 'always',
     },
   },
 });
 
-// 2. Cria a instância do roteador
-const router = createRouter({ routeTree });
+// 2. Cria a instância do roteador com preloading otimizado
+const router = createRouter({ 
+  routeTree,
+  defaultPreload: 'intent', // Precarrega a rota quando o usuário passa o mouse sobre o link
+  defaultPreloadStaleTime: 0,
+});
 
 // Registra o roteador para tipagem estática do TypeScript
 declare module "@tanstack/react-router" {
