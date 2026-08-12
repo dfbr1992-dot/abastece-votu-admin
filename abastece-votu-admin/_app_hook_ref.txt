@@ -1,0 +1,31 @@
+﻿import { useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
+
+export function usePWAInstallTracker() {
+  useEffect(() => {
+    const handleAppInstalled = async () => {
+      console.log('PWA installed event fired!');
+      try {
+        // @ts-ignore - ignorando erro de tipo caso a tabela ainda não tenha sido criada no Supabase
+        const { data, error } = await supabase
+          .from('app_installations')
+          .insert([{}]);
+
+        if (error) {
+          console.error('Error inserting PWA installation record:', error.message);
+        } else {
+          console.log('PWA installation recorded successfully:', data);
+        }
+      } catch (err) {
+        console.error('Unexpected error during PWA installation recording:', err);
+      }
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+}
+
