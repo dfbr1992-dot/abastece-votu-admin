@@ -71,3 +71,5 @@ export default defineConfig([
   },
 ])
 ```
+
+## Deploy: branch main limpa (sem submódulos) - 2026-08-12 15:53
