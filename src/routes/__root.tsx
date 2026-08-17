@@ -3,6 +3,7 @@ import { Sidebar } from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { Menu, Loader2, ShieldAlert } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
+import { AdminNotificationBell } from "../components/AdminNotificationBell";
 import logoAbasteceVotu from "@/assets/logo-abastece-votu.gif";
 
 function RootComponent() {
@@ -73,6 +74,9 @@ function RootComponent() {
           <Menu className="w-6 h-6" />
         </button>
         <h1 className="text-xl font-bold ml-4">Abastece ADM</h1>
+        <div className="ml-auto">
+          <AdminNotificationBell />
+        </div>
       </div>
 
       <Sidebar 
@@ -90,6 +94,10 @@ function RootComponent() {
       )}
 
       <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
+        {/* Sino de notificações do admin no canto superior direito (desktop) */}
+        <div className="flex justify-end mb-4">
+          <AdminNotificationBell />
+        </div>
         <Outlet />
       </main>
     </div>
