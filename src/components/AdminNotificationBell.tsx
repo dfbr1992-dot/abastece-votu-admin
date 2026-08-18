@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
@@ -21,25 +21,37 @@ export type AdminNotification = {
 };
 
 // Inbox do admin: sino com badge de não lidas no header do painel.
-// Reutiliza o padrão de polling/Realtime do projeto (TanStack Query).
+// Usa apenas polling (30s), sem canal Realtime compartilhado:
+// o componente é montado duas vezes no layout (header mobile + desktop) e
+// a criação duplicada de canais com o mesmo nome quebrava o realtime-js
+// ("cannot add 'postgres_changes' callbacks ... after 'subscribe()'").
 export function AdminNotificationBell() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [unread, setUnread] = useState(0);
+  const fetchingRef = useRef(false);
 
   async function fetchNotifications() {
-    const { data, error } = await supabase
-      .from("admin_notifications")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(20);
+    // Evita chamadas concorrentes (o componente pode estar montado 2x no DOM).
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+    try {
+      const { data, error } = await supabase
+        .from("admin_notifications")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
 
-    if (error) {
-      console.error("Erro ao buscar admin_notifications:", error);
-      return;
+      if (error) {
+        console.error("Erro ao buscar admin_notifications:", error);
+        return;
+      }
+      const rows = (data ?? []) as AdminNotification[];
+      setNotifications(rows);
+      setUnread(rows.filter((n) => !n.read).length);
+    } finally {
+      fetchingRef.current = false;
     }
-    setNotifications((data ?? []) as AdminNotification[]);
-    setUnread(((data ?? []) as AdminNotification[]).filter((n) => !n.read).length);
   }
 
   useEffect(() => {
@@ -48,21 +60,8 @@ export function AdminNotificationBell() {
     // Polling a cada 30s (mesmo padrão usado no app principal)
     const interval = setInterval(fetchNotifications, 30_000);
 
-    // Realtime: escuta INSERTs na tabela admin_notifications
-    const channel = supabase
-      .channel("admin-notifications-realtime")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "admin_notifications" },
-        () => {
-          fetchNotifications();
-        }
-      )
-      .subscribe();
-
     return () => {
       clearInterval(interval);
-      supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
