@@ -24,7 +24,7 @@ type PosicaoKey = keyof typeof POSICOES;
 const schema = z.object({
   titulo: z.string().trim().min(1, "Obrigatório").max(100),
   image_url: z.string().url("Insira uma URL de imagem válida"),
-  prioridade: z.enum(["topo", "meio", "popup"]),
+  posicao: z.enum(["topo", "meio", "popup"]),
   link_url: z.string().url("Insira uma URL de destino válida").or(z.literal("")).optional().nullable(),
   ativo: z.boolean(),
 });
@@ -40,7 +40,7 @@ function BannersPage() {
   const { data: banners, isLoading } = useQuery({
     queryKey: ["banners"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("banners").select("*").order("prioridade");
+      const { data, error } = await supabase.from("banners").select("*").order("posicao").order("prioridade");
       if (error) throw error;
       return data as Banner[];
     },
@@ -62,7 +62,7 @@ function BannersPage() {
       const payload = {
         titulo: form.titulo,
         image_url: form.image_url,
-        prioridade: form.prioridade,
+        posicao: form.posicao,
         link_url: form.link_url?.trim() === "" ? null : form.link_url,
         ativo: form.ativo,
       };
@@ -129,7 +129,7 @@ function BannersPage() {
                     <ImageIcon className="w-8 h-8 text-gray-600" />
                   )}
                   <span className="absolute top-2 left-2 bg-black/70 text-blue-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md border border-border">
-                    {POSICOES[b.prioridade as PosicaoKey]?.label || b.prioridade}
+                    {POSICOES[b.posicao as PosicaoKey]?.label || b.posicao}
                   </span>
                 </div>
 
@@ -167,7 +167,7 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
   const [form, setForm] = useState<FormData>({
     titulo: initial?.titulo ?? "",
     image_url: initial?.image_url ?? "",
-    prioridade: (initial?.prioridade as PosicaoKey) ?? "topo",
+    posicao: (initial?.posicao as PosicaoKey) ?? "topo",
     link_url: initial?.link_url ?? "",
     ativo: initial?.ativo ?? true,
   });
@@ -202,8 +202,8 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
           <Label className="text-gray-300">Posição no Aplicativo Móvel</Label>
           <select
             className="w-full h-10 rounded-md bg-white/5 border border-input text-white px-3 text-sm focus-visible:ring-ring"
-            value={form.prioridade}
-            onChange={(e) => setForm({ ...form, prioridade: e.target.value as PosicaoKey })}
+            value={form.posicao}
+            onChange={(e) => setForm({ ...form, posicao: e.target.value as PosicaoKey })}
           >
             {(Object.keys(POSICOES) as PosicaoKey[]).map((key) => (
               <option key={key} value={key} className="bg-background text-foreground">
@@ -211,7 +211,7 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
               </option>
             ))}
           </select>
-          <p className="text-[11px] text-blue-400 font-medium">{POSICOES[form.prioridade]?.tamanho}</p>
+          <p className="text-[11px] text-blue-400 font-medium">{POSICOES[form.posicao]?.tamanho}</p>
         </div>
 
         <div className="space-y-2">
