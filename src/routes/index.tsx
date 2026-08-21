@@ -63,8 +63,8 @@ function AdminDashboard() {
   ];
 
   return (
-    <div>
-      <h1 className="mb-1 text-2xl font-bold text-white md:text-3xl">Dashboard</h1>
+    <div className="brand-theme">
+      <h1 className="mb-1 text-2xl font-bold text-foreground md:text-3xl">Dashboard</h1>
       <p className="text-muted-foreground mb-6">Visão geral do hub de gestão.</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -75,14 +75,14 @@ function AdminDashboard() {
               <div className={`w-10 h-10 rounded-xl ${c.color} text-white flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
                 <Icon className="w-5 h-5" />
               </div>
-              <div className="text-2xl font-bold text-white">{c.count ?? "—"}</div>
+              <div className="text-2xl font-bold text-foreground">{c.count ?? "—"}</div>
               <div className="text-sm text-muted-foreground">{c.label}</div>
             </Link>
           );
         })}
       </div>
 
-      <h2 className="text-lg font-semibold text-white mb-4">Métricas de Usuários e App</h2>
+      <h2 className="text-lg font-semibold text-foreground mb-4">Métricas de Usuários e App</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {userCards.map((c) => {
           const Icon = c.icon;
@@ -92,7 +92,7 @@ function AdminDashboard() {
                 <Icon className="w-6 h-6" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-white">{c.count ?? "0"}</div>
+                <div className="text-2xl font-bold text-foreground">{c.count ?? "0"}</div>
                 <div className="text-sm text-muted-foreground">{c.label}</div>
               </div>
             </div>
@@ -101,14 +101,14 @@ function AdminDashboard() {
       </div>
 
       <div className="glass-card mt-8 rounded-2xl p-6">
-        <h2 className="mb-2 font-semibold text-white">Bem-vindo ao painel</h2>
+        <h2 className="mb-2 font-semibold text-foreground">Bem-vindo ao painel</h2>
         <p className="text-sm text-muted-foreground">
           Gerencie postos, atualize preços, monitore assinantes e publique anúncios.
         </p>
       </div>
 
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="sm:max-w-[425px] bg-[#0B0F19] border-white/10 text-white">
+        <DialogContent className="sm:max-w-[425px] bg-background border-border text-foreground">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-blue-500">Acesso Autorizado</DialogTitle>
             <DialogDescription className="text-muted-foreground text-lg pt-4">

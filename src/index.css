@@ -103,26 +103,36 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.brand-theme .glass-card {
-  background-color: #020617;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-}
+/*
+ * @layer components (mesma camada que o cliente usa) — importante porque
+ * utilities do Tailwind (@layer utilities) sempre vencem @layer components
+ * no cascade, não importa a ordem/especificidade. Sem isso, essas regras
+ * ficariam "soltas" (fora de qualquer layer) e passariam a vencer utilities
+ * como bg-card/40 empilhada em cima de .glass-card — quebrando exatamente
+ * a composição "glass-card + tint translúcido" que várias telas usam.
+ */
+@layer components {
+  .brand-theme .glass-card {
+    background-color: #020617;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+  }
 
-.brand-theme .glass-panel {
-  background-color: rgba(2, 6, 23, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-}
+  .brand-theme .glass-panel {
+    background-color: rgba(2, 6, 23, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+  }
 
-.brand-theme .bg-premium-gradient {
-  background-image: var(--premium-gradient);
-}
+  .brand-theme .bg-premium-gradient {
+    background-image: var(--premium-gradient);
+  }
 
-.brand-theme .text-price {
-  color: #34d399;
-  font-weight: 800;
-  text-shadow: 0 0 20px rgba(52, 211, 153, 0.35);
+  .brand-theme .text-price {
+    color: #34d399;
+    font-weight: 800;
+    text-shadow: 0 0 20px rgba(52, 211, 153, 0.35);
+  }
 }
 
 html,
