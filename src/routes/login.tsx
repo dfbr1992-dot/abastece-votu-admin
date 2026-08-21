@@ -69,40 +69,40 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#0B0F19] p-4 text-white sm:p-6">
+    <div className="brand-theme flex min-h-[100dvh] flex-col items-center justify-center bg-background p-4 text-foreground sm:p-6">
       <div className="mb-8 text-center">
         <img src={logoAbasteceVotu} alt="Logo Abastece Votu" className="mx-auto h-24 w-auto" />
       </div>
 
       <div className="relative w-full max-w-[400px]">
-        <div className="glass-card overflow-hidden rounded-[24px] border border-white/5 bg-card/40 p-6 shadow-2xl backdrop-blur-xl">
+        <div className="glass-card overflow-hidden rounded-[24px] border border-border bg-card/40 p-6 shadow-2xl backdrop-blur-xl">
           <div className="mb-6 text-center">
-            <h2 className="text-xl font-bold text-white">Painel Administrativo</h2>
+            <h2 className="text-xl font-bold text-foreground">Painel Administrativo</h2>
             <p className="text-sm text-muted-foreground">Faça login para continuar</p>
           </div>
 
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">E-mail</Label>
-              <Input 
-                type="email" 
-                required 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="voce@email.com" 
-                className="bg-white/5 border-white/10" 
+              <Input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@email.com"
+                className="bg-white/5 border-input"
               />
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">Senha</Label>
-              <Input 
-                type="password" 
-                required 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="Sua senha" 
-                className="bg-white/5 border-white/10" 
+              <Input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Sua senha"
+                className="bg-white/5 border-input"
               />
             </div>
 
@@ -113,9 +113,9 @@ function LoginPage() {
               </div>
             )}
 
-            <Button 
-              type="submit" 
-              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider" 
+            <Button
+              type="submit"
+              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs uppercase tracking-wider"
               disabled={loading}
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Entrar"}

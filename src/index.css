@@ -1,8 +1,128 @@
 @import "tailwindcss";
 
-/* Ajuste básico para garantir que o container ocupe a tela toda */
-@theme {
-  /* Caso precise estender cores futuramente, será aqui */
+/*
+ * Tokens de design "Dark Premium" portados de abastecevotu/src/styles.css
+ * (mesmos valores exatos). @theme inline só declara os nomes das classes
+ * utilitárias (bg-primary, text-muted-foreground etc.) — os valores em si
+ * ficam em .brand-theme abaixo, não em :root.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-brand-purple: var(--brand-purple);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-tile-postos: var(--tile-postos);
+  --color-tile-postos-text: var(--tile-postos-text);
+  --color-tile-mapa: var(--tile-mapa);
+  --color-tile-mapa-text: var(--tile-mapa-text);
+  --color-tile-servicos: var(--tile-servicos);
+  --color-tile-servicos-text: var(--tile-servicos-text);
+  --color-tile-premios: var(--tile-premios);
+  --color-tile-premios-text: var(--tile-premios-text);
+}
+
+/*
+ * Prova de conceito: valores reais só dentro de .brand-theme (hoje só o
+ * wrapper da tela de Login usa essa classe). Não colocamos em :root porque
+ * várias outras telas já usam bg-primary/.glass-card/text-muted-foreground
+ * sem nenhum valor por trás — jogar isso pra :root mudaria a aparência do
+ * painel inteiro de uma vez, e o pedido desta rodada é só a tela de Login.
+ * Quando o resto das telas for migrado em lote, mover este bloco pra :root
+ * e apagar a classe wrapper.
+ *
+ * OBS: a escala de radius do cliente (--radius-sm..3xl, derivada de um único
+ * --radius) fica de fora por enquanto — ela reescreve os nomes --radius-lg
+ * etc. que o Tailwind já usa como padrão em rounded-lg/xl/2xl, e essa parte
+ * não dá pra escopar: @theme gera essas variáveis em :root, não importa onde
+ * os valores concretos morem depois. Aplicar isso agora quebraria o radius
+ * de toda tela que usa rounded-* fora do Login. Entra junto com a migração
+ * completa.
+ */
+.brand-theme {
+  --background: #0f172a;
+  --foreground: #ffffff;
+
+  --card: #020617;
+  --card-foreground: #ffffff;
+
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+
+  --secondary: #1e293b;
+  --secondary-foreground: #94a3b8;
+
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+
+  --accent: #1e293b;
+  --accent-foreground: #ffffff;
+
+  --success: #34d399;
+  --danger: #f87171;
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --brand-purple: #7c3aed;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #2563eb;
+
+  --popover: #020617;
+  --popover-foreground: #ffffff;
+
+  --premium-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+
+  --tile-postos: rgba(52, 211, 153, 0.12);
+  --tile-postos-text: #34d399;
+  --tile-mapa: rgba(37, 99, 235, 0.12);
+  --tile-mapa-text: #60a5fa;
+  --tile-servicos: rgba(251, 191, 36, 0.12);
+  --tile-servicos-text: #fbbf24;
+  --tile-premios: rgba(124, 58, 237, 0.12);
+  --tile-premios-text: #a78bfa;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.brand-theme .glass-card {
+  background-color: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.brand-theme .glass-panel {
+  background-color: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.brand-theme .bg-premium-gradient {
+  background-image: var(--premium-gradient);
+}
+
+.brand-theme .text-price {
+  color: #34d399;
+  font-weight: 800;
+  text-shadow: 0 0 20px rgba(52, 211, 153, 0.35);
 }
 
 html,
