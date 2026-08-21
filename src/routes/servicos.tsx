@@ -37,7 +37,7 @@ type Servico = FormData & { id: string };
 function ServicosPage() {
   const [tab, setTab] = useState<Categoria>("lava_rapido");
   return (
-    <div className="brand-theme">
+    <div>
       <h1 className="mb-1 text-2xl font-bold text-foreground md:text-3xl">Serviços Parceiros</h1>
       <p className="text-muted-foreground mb-6">Gerencie estética automotiva e mecânica em Votuporanga.</p>
 

@@ -63,7 +63,7 @@ function AdminDashboard() {
   ];
 
   return (
-    <div className="brand-theme">
+    <div>
       <h1 className="mb-1 text-2xl font-bold text-foreground md:text-3xl">Dashboard</h1>
       <p className="text-muted-foreground mb-6">Visão geral do hub de gestão.</p>
 

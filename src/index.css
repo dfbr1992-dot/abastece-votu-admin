@@ -2,11 +2,17 @@
 
 /*
  * Tokens de design "Dark Premium" portados de abastecevotu/src/styles.css
- * (mesmos valores exatos). @theme inline só declara os nomes das classes
- * utilitárias (bg-primary, text-muted-foreground etc.) — os valores em si
- * ficam em .brand-theme abaixo, não em :root.
+ * (mesmos valores exatos). Migração completa (Prompts 1-5): as 11 telas do
+ * painel já usavam esses tokens via wrapper .brand-theme; agora que não
+ * sobra nenhuma tela fora do sistema, os valores moram direto em :root.
  */
 @theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -40,24 +46,9 @@
   --color-tile-premios-text: var(--tile-premios-text);
 }
 
-/*
- * Prova de conceito: valores reais só dentro de .brand-theme (hoje só o
- * wrapper da tela de Login usa essa classe). Não colocamos em :root porque
- * várias outras telas já usam bg-primary/.glass-card/text-muted-foreground
- * sem nenhum valor por trás — jogar isso pra :root mudaria a aparência do
- * painel inteiro de uma vez, e o pedido desta rodada é só a tela de Login.
- * Quando o resto das telas for migrado em lote, mover este bloco pra :root
- * e apagar a classe wrapper.
- *
- * OBS: a escala de radius do cliente (--radius-sm..3xl, derivada de um único
- * --radius) fica de fora por enquanto — ela reescreve os nomes --radius-lg
- * etc. que o Tailwind já usa como padrão em rounded-lg/xl/2xl, e essa parte
- * não dá pra escopar: @theme gera essas variáveis em :root, não importa onde
- * os valores concretos morem depois. Aplicar isso agora quebraria o radius
- * de toda tela que usa rounded-* fora do Login. Entra junto com a migração
- * completa.
- */
-.brand-theme {
+:root {
+  --radius: 0.75rem;
+
   --background: #0f172a;
   --foreground: #ffffff;
 
@@ -99,36 +90,26 @@
   --tile-servicos-text: #fbbf24;
   --tile-premios: rgba(124, 58, 237, 0.12);
   --tile-premios-text: #a78bfa;
-
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/*
- * @layer components (mesma camada que o cliente usa) — importante porque
- * utilities do Tailwind (@layer utilities) sempre vencem @layer components
- * no cascade, não importa a ordem/especificidade. Sem isso, essas regras
- * ficariam "soltas" (fora de qualquer layer) e passariam a vencer utilities
- * como bg-card/40 empilhada em cima de .glass-card — quebrando exatamente
- * a composição "glass-card + tint translúcido" que várias telas usam.
- */
 @layer components {
-  .brand-theme .glass-card {
+  .glass-card {
     background-color: #020617;
     border: 1px solid rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(12px);
   }
 
-  .brand-theme .glass-panel {
+  .glass-panel {
     background-color: rgba(2, 6, 23, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(12px);
   }
 
-  .brand-theme .bg-premium-gradient {
+  .bg-premium-gradient {
     background-image: var(--premium-gradient);
   }
 
-  .brand-theme .text-price {
+  .text-price {
     color: #34d399;
     font-weight: 800;
     text-shadow: 0 0 20px rgba(52, 211, 153, 0.35);
@@ -143,4 +124,5 @@ body,
   margin: 0;
   padding: 0;
   background-color: #0B0F19; /* Garante o fundo escuro premium padrão do app */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }

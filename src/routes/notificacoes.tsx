@@ -184,7 +184,7 @@ function AdminNotificacoes() {
   const estimatedCount = audienceCounts?.[audience];
 
   return (
-    <div className="brand-theme max-w-2xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Bell className="w-6 h-6 text-blue-400" /> Central de Notificações

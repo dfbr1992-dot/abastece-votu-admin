@@ -59,7 +59,7 @@ function AdminInsights() {
   const barData = Object.entries(contagemResgates || {}).map(([name, value]) => ({ name: `ID: ${name.slice(0, 5)}`, value }));
 
   return (
-    <div className="brand-theme space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
         <TrendingUp className="w-6 h-6 text-primary" /> Insights de Gestão
       </h1>

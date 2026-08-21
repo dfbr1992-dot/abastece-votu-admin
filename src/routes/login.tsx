@@ -69,7 +69,7 @@ function LoginPage() {
   }
 
   return (
-    <div className="brand-theme flex min-h-[100dvh] flex-col items-center justify-center bg-background p-4 text-foreground sm:p-6">
+    <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-background p-4 text-foreground sm:p-6">
       <div className="mb-8 text-center">
         <img src={logoAbasteceVotu} alt="Logo Abastece Votu" className="mx-auto h-24 w-auto" />
       </div>

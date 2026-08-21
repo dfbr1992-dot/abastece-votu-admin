@@ -80,7 +80,7 @@ function PostosPage() {
   }
 
   return (
-    <div className="brand-theme">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground md:text-3xl">Postos</h1>
