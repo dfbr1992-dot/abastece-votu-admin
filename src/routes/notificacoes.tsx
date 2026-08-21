@@ -184,9 +184,9 @@ function AdminNotificacoes() {
   const estimatedCount = audienceCounts?.[audience];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="brand-theme max-w-2xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Bell className="w-6 h-6 text-blue-400" /> Central de Notificações
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -195,7 +195,7 @@ function AdminNotificacoes() {
       </div>
 
       {/* Opt-in de push para o próprio admin */}
-      <div className="glass-card p-6 rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl flex items-center justify-between gap-4">
+      <div className="glass-card p-6 rounded-2xl border border-border bg-card/40 backdrop-blur-xl flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <BellRing className="w-5 h-5 text-emerald-400 shrink-0" />
           <div>
@@ -214,7 +214,7 @@ function AdminNotificacoes() {
         />
       </div>
 
-      <div className="glass-card p-8 rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
+      <div className="glass-card p-8 rounded-2xl border border-border bg-card/40 backdrop-blur-xl">
         <form onSubmit={enviarNotificacao} className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-300">Título do Alerta</label>
@@ -222,7 +222,7 @@ function AdminNotificacoes() {
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Ex: Novo Posto Parceiro!"
-              className="bg-white/5 border-white/10 text-white h-12 focus-visible:ring-blue-500"
+              className="bg-white/5 border-input text-white h-12 focus-visible:ring-ring"
             />
           </div>
 
@@ -232,7 +232,7 @@ function AdminNotificacoes() {
               value={mensagem}
               onChange={(e) => setMensagem(e.target.value)}
               placeholder="Descreva o que os usuários verão na notificação..."
-              className="bg-white/5 border-white/10 text-white min-h-[120px] resize-none focus-visible:ring-blue-500"
+              className="bg-white/5 border-input text-white min-h-[120px] resize-none focus-visible:ring-ring"
             />
           </div>
 
@@ -247,11 +247,11 @@ function AdminNotificacoes() {
             >
               <SelectTrigger
                 id="audience"
-                className="bg-white/5 border-white/10 text-white h-12 w-full focus-visible:ring-blue-500"
+                className="bg-white/5 border-input text-white h-12 w-full focus-visible:ring-ring"
               >
                 <SelectValue placeholder="Selecione o público" />
               </SelectTrigger>
-              <SelectContent className="bg-[#101424] text-white border-white/10">
+              <SelectContent className="bg-popover text-popover-foreground border-border">
                 {AUDIENCE_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value} className="focus:bg-white/10">
                     <span className="flex items-center gap-2">
@@ -278,7 +278,7 @@ function AdminNotificacoes() {
           <Button
             type="submit"
             disabled={sendMutation.isPending}
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-lg shadow-blue-500/20"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold transition-all shadow-lg shadow-blue-500/20"
           >
             {sendMutation.isPending ? (
               <Loader2 className="w-5 h-5 animate-spin" />

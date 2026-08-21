@@ -38,10 +38,10 @@ function AdminClientes() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="brand-theme space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Users className="w-6 h-6 text-primary" /> Clientes
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -51,16 +51,16 @@ function AdminClientes() {
 
         <div className="relative w-full md:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <Input 
-            placeholder="Buscar por nome ou email..." 
-            className="pl-10 bg-white/5 border-white/10 text-white focus-visible:ring-primary"
+          <Input
+            placeholder="Buscar por nome ou email..."
+            className="pl-10 bg-white/5 border-input text-white focus-visible:ring-primary"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="glass-card rounded-xl border border-white/10 overflow-hidden">
+      <div className="glass-card rounded-xl border border-border overflow-hidden">
         {isLoading ? (
           <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-primary w-8 h-8" /></div>
         ) : !filteredClientes?.length ? (
@@ -77,7 +77,7 @@ function AdminClientes() {
                   <th className="px-6 py-4">Data Cadastro</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/10">
+              <tbody className="divide-y divide-border">
                 {filteredClientes.map((c) => (
                   <tr key={c.id} className="hover:bg-white/5 transition-colors group">
                     <td className="px-6 py-4">
@@ -86,7 +86,7 @@ function AdminClientes() {
                           {c.is_premium ? <UserCheck className="w-4 h-4" /> : <User className="w-4 h-4" />}
                         </div>
                         <div>
-                          <div className="font-medium text-white">{c.nome || "Sem nome"}</div>
+                          <div className="font-medium text-foreground">{c.nome || "Sem nome"}</div>
                           <div className="text-xs text-gray-500">{c.email}</div>
                         </div>
                       </div>
