@@ -1,11 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +19,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, Loader2, Gift } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2, Gift, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -21,55 +27,84 @@ export const Route = createFileRoute("/premios")({
   component: AdminPremios,
 });
 
-const rewardSchema = z.object({
+const premioSchema = z.object({
   nome: z.string().trim().min(1, "O nome é obrigatório"),
-  descricao: z.string().trim().optional(),
-  custo_pontos: z.coerce.number().min(0, "O custo deve ser positivo"),
+  posto_id: z.string().uuid("Selecione um posto"),
+  pontos_necessarios: z.coerce
+    .number()
+    .int("Deve ser um número inteiro")
+    .positive("Deve ser maior que zero"),
+  exclusivo_premium: z.boolean(),
   ativo: z.boolean(),
-  emoji: z.string().trim().min(1, "O emoji é obrigatório"),
 });
 
-type RewardFormData = z.infer<typeof rewardSchema>;
-type Reward = RewardFormData & { id: string };
+type PremioFormData = z.infer<typeof premioSchema>;
+type Posto = { id: string; nome: string };
+type Premio = PremioFormData & { id: string; postos: { nome: string } | null };
 
 function AdminPremios() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingReward, setEditingReward] = useState<Reward | null>(null);
+  const [editingPremio, setEditingPremio] = useState<Premio | null>(null);
+  const [postoFilter, setPostoFilter] = useState<string>("all");
 
-  // 1. Busca de Dados com React Query
+  const { data: postos } = useQuery({
+    queryKey: ["postos-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("postos").select("id, nome").order("nome");
+      if (error) throw error;
+      return data as Posto[];
+    },
+  });
+
   const { data: premios, isLoading } = useQuery({
     queryKey: ["premios"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("rewards")
-        .select("*")
-        .order("custo_pontos", { ascending: true });
+        .from("premios")
+        .select("*, postos(nome)")
+        .order("posto_id")
+        .order("pontos_necessarios", { ascending: true });
 
       if (error) throw error;
-      return data as Reward[];
+      return data as Premio[];
     },
   });
 
+  // Quantos prêmios ativos cada posto tem, usado nas opções do filtro
+  const ativosPorPosto = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of premios ?? []) {
+      if (p.ativo) map.set(p.posto_id, (map.get(p.posto_id) ?? 0) + 1);
+    }
+    return map;
+  }, [premios]);
+
+  const premiosFiltrados = useMemo(() => {
+    if (!premios) return [];
+    if (postoFilter === "all") return premios;
+    return premios.filter((p) => p.posto_id === postoFilter);
+  }, [premios, postoFilter]);
+
   // 2. Mutação para Salvar/Editar
   const saveMutation = useMutation({
-    mutationFn: async (formData: RewardFormData) => {
-      if (editingReward) {
+    mutationFn: async (formData: PremioFormData) => {
+      if (editingPremio) {
         const { error } = await supabase
-          .from("rewards")
+          .from("premios")
           .update(formData)
-          .eq("id", editingReward.id);
+          .eq("id", editingPremio.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("rewards").insert([formData]);
+        const { error } = await supabase.from("premios").insert([formData]);
         if (error) throw error;
       }
     },
     onSuccess: () => {
-      toast.success(editingReward ? "Prêmio atualizado!" : "Prêmio cadastrado!");
+      toast.success(editingPremio ? "Prêmio atualizado!" : "Prêmio cadastrado!");
       queryClient.invalidateQueries({ queryKey: ["premios"] });
       setIsModalOpen(false);
-      setEditingReward(null);
+      setEditingPremio(null);
     },
     onError: (error: any) => {
       toast.error("Erro ao salvar: " + error.message);
@@ -79,7 +114,7 @@ function AdminPremios() {
   // 3. Mutação para Deletar
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("rewards").delete().eq("id", id);
+      const { error } = await supabase.from("premios").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -92,12 +127,12 @@ function AdminPremios() {
   });
 
   function handleNovoPremio() {
-    setEditingReward(null);
+    setEditingPremio(null);
     setIsModalOpen(true);
   }
 
-  function handleEditarPremio(premio: Reward) {
-    setEditingReward(premio);
+  function handleEditarPremio(premio: Premio) {
+    setEditingPremio(premio);
     setIsModalOpen(true);
   }
 
@@ -115,7 +150,7 @@ function AdminPremios() {
             <Gift className="w-6 h-6 text-primary" /> Prêmios
           </h1>
           <p className="text-sm text-muted-foreground">
-            Catálogo de prêmios disponíveis para resgate no aplicativo.
+            Catálogo de prêmios resgatáveis por pontos, por posto.
           </p>
         </div>
         <Button onClick={handleNovoPremio} className="bg-primary hover:bg-primary/90 text-white font-bold">
@@ -123,39 +158,62 @@ function AdminPremios() {
         </Button>
       </div>
 
+      <div className="w-full sm:w-80">
+        <Select value={postoFilter} onValueChange={setPostoFilter}>
+          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <SelectValue placeholder="Filtrar por posto" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#101424] text-white border-white/10">
+            <SelectItem value="all">
+              Todos os postos ({premios?.filter((p) => p.ativo).length ?? 0} ativos)
+            </SelectItem>
+            {postos?.map((posto) => (
+              <SelectItem key={posto.id} value={posto.id}>
+                {posto.nome} ({ativosPorPosto.get(posto.id) ?? 0} ativos)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="glass-card rounded-xl border border-white/10 overflow-hidden">
         {isLoading ? (
           <div className="flex justify-center p-10">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
           </div>
-        ) : !premios?.length ? (
+        ) : !premiosFiltrados.length ? (
           <div className="p-10 text-center text-muted-foreground text-sm">
-            Nenhum prêmio cadastrado.
+            {postoFilter === "all"
+              ? "Nenhum prêmio cadastrado."
+              : "Este posto ainda não tem prêmios cadastrados."}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="text-xs uppercase bg-white/5 text-muted-foreground">
                 <tr>
+                  <th className="px-6 py-4 font-semibold">Posto</th>
                   <th className="px-6 py-4 font-semibold">Prêmio</th>
-                  <th className="px-6 py-4 font-semibold">Descrição</th>
-                  <th className="px-6 py-4 font-semibold">Custo (Pts)</th>
+                  <th className="px-6 py-4 font-semibold">Pontos</th>
+                  <th className="px-6 py-4 font-semibold text-center">Premium</th>
                   <th className="px-6 py-4 font-semibold text-center">Status</th>
                   <th className="px-6 py-4 font-semibold text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {premios.map((premio) => (
+                {premiosFiltrados.map((premio) => (
                   <tr key={premio.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 font-medium text-white flex items-center gap-2">
-                      <span className="text-xl">{premio.emoji || "🎁"}</span>
-                      {premio.nome}
+                    <td className="px-6 py-4 text-muted-foreground">
+                      {premio.postos?.nome ?? "—"}
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground max-w-[200px] truncate">
-                      {premio.descricao}
-                    </td>
+                    <td className="px-6 py-4 font-medium text-white">{premio.nome}</td>
                     <td className="px-6 py-4 font-bold text-emerald-400">
-                      {premio.custo_pontos} pts
+                      {premio.pontos_necessarios} pts
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {premio.exclusivo_premium && (
+                        <Crown className="w-4 h-4 text-yellow-500 inline-block" />
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${premio.ativo ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
@@ -164,17 +222,17 @@ function AdminPremios() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8 text-blue-400 hover:text-blue-300 hover:bg-blue-400/10"
                           onClick={() => handleEditarPremio(premio)}
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-400/10"
                           onClick={() => handleDeletar(premio.id)}
                         >
@@ -191,9 +249,11 @@ function AdminPremios() {
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <RewardDialog 
-          initial={editingReward} 
-          onSave={(data) => saveMutation.mutate(data)} 
+        <PremioDialog
+          initial={editingPremio}
+          postos={postos ?? []}
+          defaultPostoId={postoFilter !== "all" ? postoFilter : undefined}
+          onSave={(data) => saveMutation.mutate(data)}
           onClose={() => setIsModalOpen(false)}
           isSaving={saveMutation.isPending}
         />
@@ -202,28 +262,32 @@ function AdminPremios() {
   );
 }
 
-function RewardDialog({ 
-  initial, 
-  onSave, 
+function PremioDialog({
+  initial,
+  postos,
+  defaultPostoId,
+  onSave,
   onClose,
-  isSaving 
-}: { 
-  initial: Reward | null; 
-  onSave: (d: RewardFormData) => void; 
+  isSaving,
+}: {
+  initial: Premio | null;
+  postos: Posto[];
+  defaultPostoId?: string;
+  onSave: (d: PremioFormData) => void;
   onClose: () => void;
   isSaving: boolean;
 }) {
-  const [form, setForm] = useState<RewardFormData>({
+  const [form, setForm] = useState<PremioFormData>({
     nome: initial?.nome ?? "",
-    descricao: initial?.descricao ?? "",
-    custo_pontos: initial?.custo_pontos ?? 0,
+    posto_id: initial?.posto_id ?? defaultPostoId ?? "",
+    pontos_necessarios: initial?.pontos_necessarios ?? 0,
+    exclusivo_premium: initial?.exclusivo_premium ?? false,
     ativo: initial?.ativo ?? true,
-    emoji: initial?.emoji ?? "🎁",
   });
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = rewardSchema.safeParse(form);
+    const parsed = premioSchema.safeParse(form);
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     onSave(parsed.data);
   }
@@ -236,48 +300,58 @@ function RewardDialog({
         </DialogTitle>
       </DialogHeader>
       <form onSubmit={submit} className="space-y-4 pt-4">
-        <div className="flex gap-3">
-          <div className="w-20">
-            <label className="text-xs font-semibold text-muted-foreground block mb-1">Emoji</label>
-            <Input
-              value={form.emoji}
-              onChange={(e) => setForm({ ...form, emoji: e.target.value })}
-              placeholder="🎁"
-              className="bg-white/5 border-white/10 text-center text-lg focus-visible:ring-primary"
-              required
-            />
-          </div>
-          <div className="flex-1">
-            <label className="text-xs font-semibold text-muted-foreground block mb-1">Nome do Prêmio</label>
-            <Input
-              value={form.nome}
-              onChange={(e) => setForm({ ...form, nome: e.target.value })}
-              placeholder="Ex: Pão de Queijo"
-              className="bg-white/5 border-white/10 focus-visible:ring-primary"
-              required
-            />
-          </div>
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground block mb-1">Posto</label>
+          <Select
+            value={form.posto_id}
+            onValueChange={(v) => setForm({ ...form, posto_id: v })}
+          >
+            <SelectTrigger className="bg-white/5 border-white/10 focus-visible:ring-primary">
+              <SelectValue placeholder="Selecione um posto" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#101424] text-white border-white/10">
+              {postos.map((posto) => (
+                <SelectItem key={posto.id} value={posto.id}>
+                  {posto.nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-muted-foreground block mb-1">Custo em Pontos</label>
+          <label className="text-xs font-semibold text-muted-foreground block mb-1">Nome do Prêmio</label>
           <Input
-            type="number"
-            value={form.custo_pontos}
-            onChange={(e) => setForm({ ...form, custo_pontos: Number(e.target.value) })}
-            placeholder="Ex: 150"
+            value={form.nome}
+            onChange={(e) => setForm({ ...form, nome: e.target.value })}
+            placeholder="Ex: Pão de Queijo"
             className="bg-white/5 border-white/10 focus-visible:ring-primary"
             required
           />
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-muted-foreground block mb-1">Descrição</label>
-          <Textarea
-            value={form.descricao}
-            onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-            placeholder="Detalhes sobre a cortesia..."
-            className="bg-white/5 border-white/10 resize-none h-20 focus-visible:ring-primary"
+          <label className="text-xs font-semibold text-muted-foreground block mb-1">Pontos Necessários</label>
+          <Input
+            type="number"
+            min="1"
+            step="1"
+            value={form.pontos_necessarios || ""}
+            onChange={(e) => setForm({ ...form, pontos_necessarios: Number(e.target.value) })}
+            placeholder="Ex: 150"
+            className="bg-white/5 border-white/10 focus-visible:ring-primary"
+            required
+          />
+        </div>
+
+        <div className="flex items-center justify-between rounded-lg border border-white/10 p-3 bg-white/5">
+          <div className="space-y-0.5">
+            <label className="text-sm font-medium">Exclusivo Premium</label>
+            <p className="text-xs text-muted-foreground">Só fica visível para assinantes Abastece+ Pro.</p>
+          </div>
+          <Switch
+            checked={form.exclusivo_premium}
+            onCheckedChange={(checked) => setForm({ ...form, exclusivo_premium: checked })}
           />
         </div>
 
@@ -293,16 +367,16 @@ function RewardDialog({
         </div>
 
         <DialogFooter className="pt-4">
-          <Button 
-            type="button" 
-            variant="ghost" 
+          <Button
+            type="button"
+            variant="ghost"
             onClick={onClose}
             className="text-white hover:bg-white/5"
           >
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isSaving}
             className="bg-primary hover:bg-primary/90 text-white font-bold min-w-[100px]"
           >
