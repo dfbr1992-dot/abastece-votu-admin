@@ -143,27 +143,27 @@ function AdminPremios() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="brand-theme space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
             <Gift className="w-6 h-6 text-primary" /> Prêmios
           </h1>
           <p className="text-sm text-muted-foreground">
             Catálogo de prêmios resgatáveis por pontos, por posto.
           </p>
         </div>
-        <Button onClick={handleNovoPremio} className="bg-primary hover:bg-primary/90 text-white font-bold">
+        <Button onClick={handleNovoPremio} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
           <Plus className="w-4 h-4 mr-2" /> Novo Prêmio
         </Button>
       </div>
 
       <div className="w-full sm:w-80">
         <Select value={postoFilter} onValueChange={setPostoFilter}>
-          <SelectTrigger className="bg-white/5 border-white/10 text-white">
+          <SelectTrigger className="bg-white/5 border-input text-white">
             <SelectValue placeholder="Filtrar por posto" />
           </SelectTrigger>
-          <SelectContent className="bg-[#101424] text-white border-white/10">
+          <SelectContent className="bg-popover text-popover-foreground border-border">
             <SelectItem value="all">
               Todos os postos ({premios?.filter((p) => p.ativo).length ?? 0} ativos)
             </SelectItem>
@@ -176,7 +176,7 @@ function AdminPremios() {
         </Select>
       </div>
 
-      <div className="glass-card rounded-xl border border-white/10 overflow-hidden">
+      <div className="glass-card rounded-xl border border-border overflow-hidden">
         {isLoading ? (
           <div className="flex justify-center p-10">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -200,13 +200,13 @@ function AdminPremios() {
                   <th className="px-6 py-4 font-semibold text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/10">
+              <tbody className="divide-y divide-border">
                 {premiosFiltrados.map((premio) => (
                   <tr key={premio.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 text-muted-foreground">
                       {premio.postos?.nome ?? "—"}
                     </td>
-                    <td className="px-6 py-4 font-medium text-white">{premio.nome}</td>
+                    <td className="px-6 py-4 font-medium text-foreground">{premio.nome}</td>
                     <td className="px-6 py-4 font-bold text-emerald-400">
                       {premio.pontos_necessarios} pts
                     </td>
@@ -293,7 +293,7 @@ function PremioDialog({
   }
 
   return (
-    <DialogContent className="sm:max-w-[425px] bg-[#161618] border-white/10 text-white">
+    <DialogContent className="sm:max-w-[425px] bg-background border-border text-foreground">
       <DialogHeader>
         <DialogTitle className="text-xl font-bold">
           {initial ? "Editar Prêmio" : "Cadastrar Novo Prêmio"}
@@ -306,10 +306,10 @@ function PremioDialog({
             value={form.posto_id}
             onValueChange={(v) => setForm({ ...form, posto_id: v })}
           >
-            <SelectTrigger className="bg-white/5 border-white/10 focus-visible:ring-primary">
+            <SelectTrigger className="bg-white/5 border-input focus-visible:ring-primary">
               <SelectValue placeholder="Selecione um posto" />
             </SelectTrigger>
-            <SelectContent className="bg-[#101424] text-white border-white/10">
+            <SelectContent className="bg-popover text-popover-foreground border-border">
               {postos.map((posto) => (
                 <SelectItem key={posto.id} value={posto.id}>
                   {posto.nome}
@@ -325,7 +325,7 @@ function PremioDialog({
             value={form.nome}
             onChange={(e) => setForm({ ...form, nome: e.target.value })}
             placeholder="Ex: Pão de Queijo"
-            className="bg-white/5 border-white/10 focus-visible:ring-primary"
+            className="bg-white/5 border-input focus-visible:ring-primary"
             required
           />
         </div>
@@ -339,12 +339,12 @@ function PremioDialog({
             value={form.pontos_necessarios || ""}
             onChange={(e) => setForm({ ...form, pontos_necessarios: Number(e.target.value) })}
             placeholder="Ex: 150"
-            className="bg-white/5 border-white/10 focus-visible:ring-primary"
+            className="bg-white/5 border-input focus-visible:ring-primary"
             required
           />
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-white/10 p-3 bg-white/5">
+        <div className="flex items-center justify-between rounded-lg border border-border p-3 bg-white/5">
           <div className="space-y-0.5">
             <label className="text-sm font-medium">Exclusivo Premium</label>
             <p className="text-xs text-muted-foreground">Só fica visível para assinantes Abastece+ Pro.</p>
@@ -355,7 +355,7 @@ function PremioDialog({
           />
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-white/10 p-3 bg-white/5">
+        <div className="flex items-center justify-between rounded-lg border border-border p-3 bg-white/5">
           <div className="space-y-0.5">
             <label className="text-sm font-medium">Prêmio Ativo</label>
             <p className="text-xs text-muted-foreground">Disponibiliza o prêmio imediatamente para resgate.</p>
@@ -371,14 +371,14 @@ function PremioDialog({
             type="button"
             variant="ghost"
             onClick={onClose}
-            className="text-white hover:bg-white/5"
+            className="text-foreground hover:bg-white/5"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={isSaving}
-            className="bg-primary hover:bg-primary/90 text-white font-bold min-w-[100px]"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold min-w-[100px]"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
           </Button>

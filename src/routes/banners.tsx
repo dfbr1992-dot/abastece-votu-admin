@@ -96,10 +96,10 @@ function BannersPage() {
   }
 
   return (
-    <div>
+    <div className="brand-theme">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white md:text-3xl">Banners do App</h1>
+          <h1 className="text-2xl font-bold text-foreground md:text-3xl">Banners do App</h1>
           <p className="text-muted-foreground">Gerencie os destaques visuais exibidos no celular.</p>
         </div>
         <Button onClick={openNew}>
@@ -114,26 +114,26 @@ function BannersPage() {
       {isLoading ? (
         <div className="text-muted-foreground text-sm">Carregando…</div>
       ) : !banners?.length ? (
-        <div className="glass-card rounded-2xl p-10 text-center text-muted-foreground border border-white/10">
+        <div className="glass-card rounded-2xl p-10 text-center text-muted-foreground border border-border">
           Nenhum banner configurado. Clique em <strong>Novo Banner</strong> para começar.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {banners.map((b) => (
-            <div key={b.id} className="glass-card bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col justify-between">
+            <div key={b.id} className="glass-card bg-white/5 border border-border rounded-2xl p-4 flex flex-col justify-between">
               <div>
-                <div className="relative aspect-[2/1] w-full rounded-xl overflow-hidden bg-black/40 mb-3 border border-white/5 flex items-center justify-center group">
+                <div className="relative aspect-[2/1] w-full rounded-xl overflow-hidden bg-black/40 mb-3 border border-border flex items-center justify-center group">
                   {b.image_url ? (
                     <img src={b.image_url} alt={b.titulo} className="object-cover w-full h-full" />
                   ) : (
                     <ImageIcon className="w-8 h-8 text-gray-600" />
                   )}
-                  <span className="absolute top-2 left-2 bg-black/70 text-blue-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md border border-white/10">
+                  <span className="absolute top-2 left-2 bg-black/70 text-blue-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md border border-border">
                     {POSICOES[b.prioridade as PosicaoKey]?.label || b.prioridade}
                   </span>
                 </div>
-                
-                <h3 className="text-white font-semibold text-base truncate">{b.titulo}</h3>
+
+                <h3 className="text-foreground font-semibold text-base truncate">{b.titulo}</h3>
                 {b.link_url && (
                   <a href={b.link_url} target="_blank" rel="noreferrer" className="text-xs text-blue-400 flex items-center gap-1 mt-1 hover:underline">
                     Link de destino <ExternalLink className="w-3 h-3" />
@@ -141,13 +141,13 @@ function BannersPage() {
                 )}
               </div>
 
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${b.ativo ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-muted-foreground border border-white/10"}`}>
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${b.ativo ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-muted-foreground border border-border"}`}>
                   {b.ativo ? "Exibindo" : "Pausado"}
                 </span>
 
                 <div className="flex gap-1">
-                  <Button size="icon" variant="ghost" onClick={() => openEdit(b)} className="hover:bg-white/10 text-gray-400 hover:text-white">
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(b)} className="hover:bg-white/10 text-gray-400 hover:text-foreground">
                     <Pencil className="w-4 h-4" />
                   </Button>
                   <Button size="icon" variant="ghost" onClick={() => remove(b.id)} className="hover:bg-red-500/20 text-gray-400 hover:text-red-400">
@@ -182,7 +182,7 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
   }
 
   return (
-    <DialogContent className="max-w-md bg-[#0B0F19] text-white border border-white/10">
+    <DialogContent className="max-w-md bg-background text-foreground border border-border">
       <DialogHeader>
         <DialogTitle className="text-xl">{initial ? "Editar Banner" : "Novo Banner"}</DialogTitle>
       </DialogHeader>
@@ -191,7 +191,7 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
         <div className="space-y-2">
           <Label className="text-gray-300">Título Interno do Banner</Label>
           <Input
-            className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500"
+            className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
             value={form.titulo}
             onChange={(e) => setForm({ ...form, titulo: e.target.value })}
             placeholder="Ex: Campanha Gasolina Aditivada - Junho"
@@ -201,12 +201,12 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
         <div className="space-y-2">
           <Label className="text-gray-300">Posição no Aplicativo Móvel</Label>
           <select
-            className="w-full h-10 rounded-md bg-white/5 border border-white/10 text-white px-3 text-sm focus-visible:ring-blue-500"
+            className="w-full h-10 rounded-md bg-white/5 border border-input text-white px-3 text-sm focus-visible:ring-ring"
             value={form.prioridade}
             onChange={(e) => setForm({ ...form, prioridade: e.target.value as PosicaoKey })}
           >
             {(Object.keys(POSICOES) as PosicaoKey[]).map((key) => (
-              <option key={key} value={key} className="bg-[#0B0F19] text-white">
+              <option key={key} value={key} className="bg-background text-foreground">
                 {POSICOES[key].label}
               </option>
             ))}
@@ -217,7 +217,7 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
         <div className="space-y-2">
           <Label className="text-gray-300">URL da Imagem do Banner</Label>
           <Input
-            className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500"
+            className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
             value={form.image_url}
             onChange={(e) => setForm({ ...form, image_url: e.target.value })}
             placeholder="https://linkdaimagem.com/foto.png"
@@ -227,24 +227,24 @@ function BannerDialog({ initial, onSave, onCancel }: { initial: Banner | null; o
         <div className="space-y-2">
           <Label className="text-gray-300">Link de Ação ao Clicar (Opcional)</Label>
           <Input
-            className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500"
+            className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
             value={form.link_url ?? ""}
             onChange={(e) => setForm({ ...form, link_url: e.target.value })}
             placeholder="Ex: https://posto-votu.com/promocao"
           />
         </div>
 
-        <div className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/5">
+        <div className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-border">
           <Label className="text-gray-300 cursor-pointer">Banner Ativo (Visível no App)</Label>
           <Switch checked={form.ativo} onCheckedChange={(v) => setForm({ ...form, ativo: v })} />
         </div>
       </div>
 
       <DialogFooter className="pt-4">
-        <Button type="button" variant="ghost" onClick={onCancel} className="text-gray-400 hover:text-white hover:bg-white/10">
+        <Button type="button" variant="ghost" onClick={onCancel} className="text-gray-400 hover:text-foreground hover:bg-white/10">
           Cancelar
         </Button>
-        <Button type="button" onClick={handleManualSubmit} className="bg-blue-600 hover:bg-blue-700 text-white">
+        <Button type="button" onClick={handleManualSubmit} className="bg-primary hover:bg-primary/90 text-primary-foreground">
           Salvar Banner
         </Button>
       </DialogFooter>

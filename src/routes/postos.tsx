@@ -80,10 +80,10 @@ function PostosPage() {
   }
 
   return (
-    <div>
+    <div className="brand-theme">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white md:text-3xl">Postos</h1>
+          <h1 className="text-2xl font-bold text-foreground md:text-3xl">Postos</h1>
           <p className="text-muted-foreground">Catálogo de postos em Votuporanga.</p>
         </div>
         
@@ -105,7 +105,7 @@ function PostosPage() {
           Nenhum posto cadastrado. Clique em <strong>Novo</strong> para começar.
         </div>
       ) : (
-        <div className="glass-card overflow-hidden rounded-2xl border border-white/10">
+        <div className="glass-card overflow-hidden rounded-2xl border border-border">
           <table className="w-full text-sm">
             <thead className="bg-white/5 text-left text-muted-foreground">
               <tr>
@@ -118,19 +118,19 @@ function PostosPage() {
             </thead>
             <tbody>
               {postos.map((p) => (
-                <tr key={p.id} className="border-t border-white/5 hover:bg-white/[0.02] transition-colors">
-                  <td className="px-4 py-3 font-medium text-white">{p.nome}</td>
+                <tr key={p.id} className="border-t border-border hover:bg-white/[0.02] transition-colors">
+                  <td className="px-4 py-3 font-medium text-foreground">{p.nome}</td>
                   <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{p.endereco}</td>
                   <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground">
                     {p.lat && p.lng ? <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" />{p.lat}, {p.lng}</span> : "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${p.ativo ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-muted-foreground border border-white/10"}`}>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${p.ativo ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-white/5 text-muted-foreground border border-border"}`}>
                       {p.ativo ? "Ativo" : "Inativo"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button size="icon" variant="ghost" onClick={() => openEdit(p)} className="hover:bg-white/10 text-gray-400 hover:text-white">
+                    <Button size="icon" variant="ghost" onClick={() => openEdit(p)} className="hover:bg-white/10 text-gray-400 hover:text-foreground">
                       <Pencil className="w-4 h-4" />
                     </Button>
                     <Button size="icon" variant="ghost" onClick={() => remove(p.id)} className="hover:bg-red-500/20 text-gray-400 hover:text-red-400">
@@ -167,95 +167,95 @@ function PostoDialog({ initial, onSave, onClose }: PostoDialogProps) {
 
   return (
     /* Classes de cor de fundo e borda adicionadas para garantir visibilidade no tema escuro */
-    <DialogContent className="bg-[#0B0F19] text-white border border-white/10 sm:max-w-[450px]">
+    <DialogContent className="bg-background text-foreground border border-border sm:max-w-[450px]">
       <DialogHeader>
         <DialogTitle className="text-xl">{initial ? "Editar posto" : "Novo posto"}</DialogTitle>
       </DialogHeader>
-      
+
       <form onSubmit={submit} className="space-y-5 pt-4">
         <div className="space-y-2">
           <Label className="text-gray-300">Nome</Label>
-          <Input 
-            className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500" 
-            value={form.nome} 
-            onChange={(e) => setForm({ ...form, nome: e.target.value })} 
-            required 
+          <Input
+            className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
+            value={form.nome}
+            onChange={(e) => setForm({ ...form, nome: e.target.value })}
+            required
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label className="text-gray-300">Endereço</Label>
-          <Input 
-            className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500" 
-            value={form.endereco} 
-            onChange={(e) => setForm({ ...form, endereco: e.target.value })} 
-            required 
+          <Input
+            className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
+            value={form.endereco}
+            onChange={(e) => setForm({ ...form, endereco: e.target.value })}
+            required
           />
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="text-gray-300">Latitude</Label>
-            <Input 
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500" 
-              type="number" 
-              step="any" 
-              value={form.lat ?? ""} 
-              onChange={(e) => setForm({ ...form, lat: e.target.value === "" ? null : Number(e.target.value) })} 
+            <Input
+              className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
+              type="number"
+              step="any"
+              value={form.lat ?? ""}
+              onChange={(e) => setForm({ ...form, lat: e.target.value === "" ? null : Number(e.target.value) })}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-gray-300">Longitude</Label>
-            <Input 
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500" 
-              type="number" 
-              step="any" 
-              value={form.lng ?? ""} 
-              onChange={(e) => setForm({ ...form, lng: e.target.value === "" ? null : Number(e.target.value) })} 
+            <Input
+              className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
+              type="number"
+              step="any"
+              value={form.lng ?? ""}
+              onChange={(e) => setForm({ ...form, lng: e.target.value === "" ? null : Number(e.target.value) })}
             />
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label className="text-gray-300">Abertura</Label>
-            <Input 
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500" 
-              placeholder="06:00" 
-              value={form.horario_abertura ?? ""} 
-              onChange={(e) => setForm({ ...form, horario_abertura: e.target.value })} 
+            <Input
+              className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
+              placeholder="06:00"
+              value={form.horario_abertura ?? ""}
+              onChange={(e) => setForm({ ...form, horario_abertura: e.target.value })}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-gray-300">Fechamento</Label>
-            <Input 
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-blue-500" 
-              placeholder="22:00" 
-              value={form.horario_fechamento ?? ""} 
-              onChange={(e) => setForm({ ...form, horario_fechamento: e.target.value })} 
+            <Input
+              className="bg-white/5 border-input text-white placeholder:text-gray-500 focus-visible:ring-ring"
+              placeholder="22:00"
+              value={form.horario_fechamento ?? ""}
+              onChange={(e) => setForm({ ...form, horario_fechamento: e.target.value })}
             />
           </div>
         </div>
-        
-        <div className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/5">
+
+        <div className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-border">
           <Label className="text-gray-300 cursor-pointer">Posto Ativo</Label>
-          <Switch 
-            checked={form.ativo} 
-            onCheckedChange={(v) => setForm({ ...form, ativo: v })} 
+          <Switch
+            checked={form.ativo}
+            onCheckedChange={(v) => setForm({ ...form, ativo: v })}
           />
         </div>
-        
+
         {initial && (
           <div className="pt-2">
             <PostoServicosForm postoId={initial.id} />
           </div>
         )}
-        
+
         <DialogFooter className="pt-2">
-          <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400 hover:text-white hover:bg-white/10">
+          <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400 hover:text-foreground hover:bg-white/10">
             Cancelar
           </Button>
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
             Salvar
           </Button>
         </DialogFooter>

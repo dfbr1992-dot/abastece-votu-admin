@@ -39,9 +39,9 @@ export function PostoServicosForm({ postoId }: { postoId: string }) {
   };
 
   return (
-    <div className="space-y-4 rounded-xl border border-white/10 bg-white/5 p-4 mt-4">
+    <div className="space-y-4 rounded-xl border border-border bg-white/5 p-4 mt-4">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider">Serviços do Posto</h3>
+        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Serviços do Posto</h3>
       </div>
       
       <div className="space-y-3">

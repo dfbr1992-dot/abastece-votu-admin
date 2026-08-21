@@ -36,8 +36,8 @@ function PrecosPage() {
   });
 
   return (
-    <div>
-      <h1 className="mb-1 text-2xl font-bold text-white md:text-3xl">Motor de Preços</h1>
+    <div className="brand-theme">
+      <h1 className="mb-1 text-2xl font-bold text-foreground md:text-3xl">Motor de Preços</h1>
       <p className="text-muted-foreground mb-6">Atualize os valores em tempo real. As mudanças sincronizam imediatamente.</p>
 
       {isLoading ? (
@@ -64,13 +64,13 @@ function PostoRow({ posto }: { posto: Posto }) {
       {/* Botão solto, sem o SheetTrigger ao redor */}
       <button 
         onClick={() => setOpen(true)}
-        className="glass-card bg-white/5 border border-white/10 flex w-full items-center gap-3 rounded-2xl p-4 text-left transition-shadow hover:bg-white/10"
+        className="glass-card bg-white/5 border border-border flex w-full items-center gap-3 rounded-2xl p-4 text-left transition-shadow hover:bg-white/10"
       >
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400">
           <Fuel className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="truncate font-semibold text-white">{posto.nome}</div>
+          <div className="truncate font-semibold text-foreground">{posto.nome}</div>
           <div className="text-xs text-muted-foreground flex gap-3 flex-wrap mt-1">
             {(["etanol", "gasolina_comum", "diesel"] as const).map((k) =>
               precoMap[k] ? <span key={k}>{LABELS[k].split(" ")[0]} <b className="text-emerald-400">R$ {Number(precoMap[k]).toFixed(2)}</b></span> : null
@@ -124,11 +124,11 @@ function PrecosSheet({ postoId, postoNome, initial, onSaved }: { postoId: string
 
   return (
     /* Cor de fundo e borda forçadas no SheetContent para o tema escuro */
-    <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto bg-[#0B0F19] text-white border-t border-white/10 rounded-t-2xl">
+    <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto bg-background text-foreground border-t border-border rounded-t-2xl">
       <SheetHeader>
-        <SheetTitle className="text-white text-xl">{postoNome}</SheetTitle>
+        <SheetTitle className="text-foreground text-xl">{postoNome}</SheetTitle>
       </SheetHeader>
-      
+
       <div className="space-y-5 py-6">
         {(Object.keys(LABELS) as Combustivel[]).map((k) => (
           <div key={k} className="space-y-2">
@@ -141,14 +141,14 @@ function PrecosSheet({ postoId, postoNome, initial, onSaved }: { postoId: string
                 step="0.001"
                 min="0"
                 placeholder="0.000"
-                className="pl-10 h-12 text-lg bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-blue-500"
+                className="pl-10 h-12 text-lg bg-white/5 border-input text-white placeholder:text-gray-600 focus-visible:ring-ring"
                 value={values[k]}
                 onChange={(e) => setValues({ ...values, [k]: e.target.value })}
               />
             </div>
           </div>
         ))}
-        <Button onClick={save} disabled={saving} className="w-full h-12 text-base bg-blue-600 hover:bg-blue-700 text-white mt-4">
+        <Button onClick={save} disabled={saving} className="w-full h-12 text-base bg-primary hover:bg-primary/90 text-primary-foreground mt-4">
           {saving && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
           Salvar preços
         </Button>
