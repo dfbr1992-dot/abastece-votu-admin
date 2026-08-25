@@ -59,10 +59,16 @@ function findHeaderRowIndex(rows) {
   }
   return -1;
 }
+// Normaliza CNPJ pros dois lados da comparação (planilha da ANP e postos.cnpj) do mesmo
+// jeito: se o valor é numérico (célula bruta da ANP, ou um cnpj salvo só com dígitos),
+// usa o número; se não (cnpj salvo com máscara/pontuação/espaço), tira tudo que não é
+// dígito. Nos dois casos completa com zero à esquerda até 14 dígitos.
 function normalizeCnpj(raw) {
+  if (raw === null || raw === undefined || raw === "") return null;
   const n = Number(raw);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return String(Math.round(n)).padStart(14, "0").slice(-14);
+  const digits = Number.isFinite(n) && n > 0 ? String(Math.round(n)) : String(raw).replace(/\D/g, "");
+  if (!digits) return null;
+  return digits.padStart(14, "0").slice(-14);
 }
 function mapProduto(produto) {
   const p = up(produto);
@@ -180,12 +186,15 @@ async function main() {
     .not("cnpj", "is", null);
   if (postosError) throw new Error(`Falha ao buscar postos: ${postosError.message}`);
 
-  const postoIdPorCnpj = new Map(nossosPostos.map((p) => [p.cnpj.replace(/\D/g, "").padStart(14, "0"), p.id]));
+  const postoIdPorCnpj = new Map(nossosPostos.map((p) => [normalizeCnpj(p.cnpj), p.id]));
 
-  const postosEncontrados = anpPostos
-    .map((anp) => ({ anp, postoId: postoIdPorCnpj.get(anp.cnpj) }))
-    .filter((x) => x.postoId);
-  const semCorrespondencia = anpPostos.filter((anp) => !postoIdPorCnpj.get(anp.cnpj));
+  const casados = anpPostos.map((anp) => ({ anp, postoId: postoIdPorCnpj.get(anp.cnpj) }));
+  const semCorrespondencia = casados.filter((x) => !x.postoId).map((x) => x.anp);
+  // Casou o CNPJ certinho, mas a ANP não coletou nenhum dos 4 combustíveis que
+  // acompanhamos pra esse posto nessa semana (o caso mais comum: só GLP foi
+  // pesquisado ali). Não é erro de correspondência — é falta de dado essa semana.
+  const semCombustivelReconhecido = casados.filter((x) => x.postoId && Object.keys(x.anp.precos).length === 0);
+  const postosEncontrados = casados.filter((x) => x.postoId && Object.keys(x.anp.precos).length > 0);
 
   const postoIds = [...new Set(postosEncontrados.map((x) => x.postoId))];
   const { data: precosAtuais, error: precosError } = await supabase
@@ -223,6 +232,10 @@ async function main() {
   console.log(`Pulados por promoção manual ativa: ${puladosPorPromocao}`);
   console.log(`Postos da planilha sem CNPJ cadastrado: ${semCorrespondencia.length}`);
   for (const anp of semCorrespondencia) {
+    console.log(`  - ${anp.razaoSocial} (CNPJ ${anp.cnpj}) — ${anp.endereco}`);
+  }
+  console.log(`Postos que casaram o CNPJ mas sem combustível reconhecido essa semana (ex.: só GLP): ${semCombustivelReconhecido.length}`);
+  for (const { anp } of semCombustivelReconhecido) {
     console.log(`  - ${anp.razaoSocial} (CNPJ ${anp.cnpj}) — ${anp.endereco}`);
   }
 }
