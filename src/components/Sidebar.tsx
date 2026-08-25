@@ -10,10 +10,11 @@ import {
   Image as ImageIcon, 
   LogOut, 
   X, 
-  Users, 
+  Users,
   Bell,
   ExternalLink,
-  Smartphone
+  Smartphone,
+  RefreshCw
 } from "lucide-react";
 import { useAuth } from "../hooks/use-auth";
 
@@ -51,6 +52,7 @@ export function Sidebar({
             { label: "Métricas", to: "/metricas", icon: BarChart3 },
             { label: "Postos", to: "/postos", icon: MapPin },
             { label: "Preços", to: "/precos", icon: DollarSign },
+            { label: "Sincronização ANP", to: "/anp-sync", icon: RefreshCw },
             { label: "Serviços", to: "/servicos", icon: Wrench },
             { label: "Prêmios", to: "/premios", icon: Gift },
             { label: "Banners", to: "/banners", icon: ImageIcon },

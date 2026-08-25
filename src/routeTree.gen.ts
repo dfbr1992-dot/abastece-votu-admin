@@ -19,6 +19,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as ClientesRouteImport } from './routes/clientes'
 import { Route as BannersRouteImport } from './routes/banners'
+import { Route as AnpSyncRouteImport } from './routes/anp-sync'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ServicosRoute = ServicosRouteImport.update({
@@ -71,6 +72,11 @@ const BannersRoute = BannersRouteImport.update({
   path: '/banners',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnpSyncRoute = AnpSyncRouteImport.update({
+  id: '/anp-sync',
+  path: '/anp-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -79,6 +85,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/anp-sync': typeof AnpSyncRoute
   '/banners': typeof BannersRoute
   '/clientes': typeof ClientesRoute
   '/insights': typeof InsightsRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/anp-sync': typeof AnpSyncRoute
   '/banners': typeof BannersRoute
   '/clientes': typeof ClientesRoute
   '/insights': typeof InsightsRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/anp-sync': typeof AnpSyncRoute
   '/banners': typeof BannersRoute
   '/clientes': typeof ClientesRoute
   '/insights': typeof InsightsRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/anp-sync'
     | '/banners'
     | '/clientes'
     | '/insights'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/anp-sync'
     | '/banners'
     | '/clientes'
     | '/insights'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/anp-sync'
     | '/banners'
     | '/clientes'
     | '/insights'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnpSyncRoute: typeof AnpSyncRoute
   BannersRoute: typeof BannersRoute
   ClientesRoute: typeof ClientesRoute
   InsightsRoute: typeof InsightsRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BannersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/anp-sync': {
+      id: '/anp-sync'
+      path: '/anp-sync'
+      fullPath: '/anp-sync'
+      preLoaderRoute: typeof AnpSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -257,6 +277,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnpSyncRoute: AnpSyncRoute,
   BannersRoute: BannersRoute,
   ClientesRoute: ClientesRoute,
   InsightsRoute: InsightsRoute,

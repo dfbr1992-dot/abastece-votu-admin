@@ -7,8 +7,8 @@ const cleanEnvVar = (value: string | undefined) => {
   return value.replace(/['"]+/g, '').trim();
 };
 
-const SUPABASE_URL = cleanEnvVar(import.meta.env.VITE_SUPABASE_URL);
-const SUPABASE_PUBLISHABLE_KEY = cleanEnvVar(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+export const SUPABASE_URL = cleanEnvVar(import.meta.env.VITE_SUPABASE_URL);
+export const SUPABASE_PUBLISHABLE_KEY = cleanEnvVar(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   console.error('[Supabase] Variáveis de ambiente ausentes ou mal formatadas.');

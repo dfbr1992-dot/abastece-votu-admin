@@ -1,0 +1,35 @@
+name: Sincronização de preços ANP
+
+on:
+  schedule:
+    # Toda segunda-feira às 09:00 UTC (06:00 em Brasília). O levantamento da ANP
+    # fecha aos domingos, mas a publicação às vezes atrasa alguns dias — se a
+    # planilha da semana ainda não estiver no ar, o job simplesmente pega a mais
+    # recente disponível (nunca calcula a URL por data, ver scripts/anp-sync.mjs).
+    - cron: "0 9 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Rodar sincronização
+        run: node scripts/anp-sync.mjs
+        env:
+          SUPABASE_URL: https://joinkeaozewabkkyunwu.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
