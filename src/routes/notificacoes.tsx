@@ -136,6 +136,23 @@ function AdminNotificacoes() {
           throw new Error("Permissão de notificação negada. Habilite nas configurações do navegador.");
         }
         const registration = await navigator.serviceWorker.ready;
+        // Descarta qualquer inscrição existente criada com uma VAPID key
+        // diferente da atual — senão pushManager.subscribe() abaixo falha
+        // com "InvalidStateError: ... different applicationServerKey".
+        const existing = await registration.pushManager.getSubscription();
+        if (existing) {
+          const currentKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY_ADMIN);
+          const existingKey = existing.options?.applicationServerKey
+            ? new Uint8Array(existing.options.applicationServerKey)
+            : null;
+          const matches =
+            existingKey &&
+            existingKey.length === currentKey.length &&
+            existingKey.every((b, i) => b === currentKey[i]);
+          if (!matches) {
+            await existing.unsubscribe();
+          }
+        }
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY_ADMIN),
@@ -303,9 +320,17 @@ function AdminNotificacoes() {
   );
 }
 
-// VAPID public key reutilizada do app principal (não regenerar)
+// VAPID public key — TEM que ser exatamente a mesma usada pelo app
+// principal (src/lib/push-service.ts), porque as duas Edge Functions
+// (send-notification e notify-admin-event) assinam com o MESMO par de
+// secrets VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY. A chave anterior aqui era
+// diferente da do app principal e não tinha par privado correspondente no
+// servidor — todo push pro admin falhava com "VAPID credentials ... do not
+// correspond to the credentials used to create the subscriptions" (mesmo
+// bug corrigido em 2026-08-28 no app principal). Nunca trocar esta chave
+// sem trocar junto em push-service.ts e no secret do Supabase.
 const VAPID_PUBLIC_KEY_ADMIN =
-  "BA57Z49Blal4DE1oz5cgBAFIkhinHfIxFlf2vV0EY0XEpx-1nRQGmEwpZp_1v1OXKMGo4TIFevl169srNrNEM50";
+  "BG9tmQBBbDxCQDTM5Hem6Ove_8g-yJpUdoPaZWqNyS8-BQuYw6ViuRg6g2Kmoel5xlJ-eRa8vpntzJK4UxCPhk4";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
